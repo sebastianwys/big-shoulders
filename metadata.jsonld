@@ -1,0 +1,108 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "Project Big Shoulders Integrated Dataset",
+  "alternateName": "hpi_census_merged",
+  "description": "An integrated dataset combining FHFA House Price Index annual averages with U.S. Census ACS 5-year demographic and economic estimates, joined on metropolitan statistical area code and year. Covers 373 metros across three non-overlapping vintages: 2014 (post-recession baseline, surveys 2010-2014), 2019 (pre-COVID peak, surveys 2015-2019), and 2024 (post-COVID reality, surveys 2020-2024).",
+  "url": "data/integrated/hpi_census_merged.csv",
+  "identifier": "is477-sp26-big-shoulders",
+  "version": "1.0",
+  "datePublished": "2026-05-07",
+  "dateModified": "2026-05-07",
+  "creator": {
+    "@type": "Person",
+    "name": "Sebastian Wysocki",
+    "email": "sebaj1011@gmail.com",
+    "affiliation": {
+      "@type": "Organization",
+      "name": "University of Illinois Urbana-Champaign"
+    }
+  },
+  "publisher": {
+    "@type": "Person",
+    "name": "Sebastian Wysocki"
+  },
+  "license": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "keywords": [
+    "housing affordability",
+    "FHFA",
+    "house price index",
+    "American Community Survey",
+    "Census",
+    "metropolitan statistical area",
+    "CBSA",
+    "United States",
+    "demographic data",
+    "economic data",
+    "data integration",
+    "data curation"
+  ],
+  "spatialCoverage": {
+    "@type": "Place",
+    "name": "United States Metropolitan Statistical Areas",
+    "geo": {
+      "@type": "GeoShape",
+      "addressCountry": "US"
+    }
+  },
+  "temporalCoverage": "2010-01-01/2024-12-31",
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "name": "Integrated CSV",
+      "encodingFormat": "text/csv",
+      "contentUrl": "data/integrated/hpi_census_merged.csv"
+    }
+  ],
+  "isBasedOn": [
+    {
+      "@type": "Dataset",
+      "name": "FHFA House Price Index Master File",
+      "url": "https://www.fhfa.gov/hpi/download/monthly/hpi_master.csv",
+      "publisher": {
+        "@type": "GovernmentOrganization",
+        "name": "Federal Housing Finance Agency"
+      },
+      "license": "https://www.usa.gov/government-works/"
+    },
+    {
+      "@type": "Dataset",
+      "name": "American Community Survey 5-Year Estimates",
+      "url": "https://www.census.gov/data/developers/data-sets/acs-5year.html",
+      "publisher": {
+        "@type": "GovernmentOrganization",
+        "name": "U.S. Census Bureau"
+      },
+      "license": "https://www.usa.gov/government-works/"
+    }
+  ],
+  "variableMeasured": [
+    {"@type": "PropertyValue", "name": "place_id", "description": "FHFA CBSA code (string). Joins to Census cbsa_code."},
+    {"@type": "PropertyValue", "name": "place_name", "description": "Metro area name from FHFA."},
+    {"@type": "PropertyValue", "name": "hpi_type", "description": "FHFA HPI type. Constant value 'traditional' (filtered before aggregation)."},
+    {"@type": "PropertyValue", "name": "hpi_flavor", "description": "FHFA HPI flavor. Constant value 'all-transactions' (filtered before aggregation)."},
+    {"@type": "PropertyValue", "name": "yr", "description": "Year of observation (2014, 2019, or 2024). FHFA-side join key."},
+    {"@type": "PropertyValue", "name": "avg_index_nsa", "description": "Annual average of non-seasonally adjusted FHFA House Price Index."},
+    {"@type": "PropertyValue", "name": "quarters_available", "description": "Count of FHFA quarters in the annual average (4 = complete year)."},
+    {"@type": "PropertyValue", "name": "NAME", "description": "Metro area name from Census ACS. Duplicates place_name from FHFA side."},
+    {"@type": "PropertyValue", "name": "median_income", "description": "Census ACS median household income in USD."},
+    {"@type": "PropertyValue", "name": "total_pop", "description": "Census ACS total population."},
+    {"@type": "PropertyValue", "name": "median_age", "description": "Census ACS median age in years."},
+    {"@type": "PropertyValue", "name": "bachelors_count", "description": "Persons with bachelor's degree."},
+    {"@type": "PropertyValue", "name": "masters_count", "description": "Persons with master's degree."},
+    {"@type": "PropertyValue", "name": "total_occupied_units", "description": "Total occupied housing units."},
+    {"@type": "PropertyValue", "name": "owner_occupied_units", "description": "Owner-occupied housing units."},
+    {"@type": "PropertyValue", "name": "median_home_value", "description": "Median home value in USD."},
+    {"@type": "PropertyValue", "name": "cbsa_code", "description": "Census CBSA code (string after type cast). Census-side join key. Duplicates place_id after merge."},
+    {"@type": "PropertyValue", "name": "year", "description": "ACS vintage year. Census-side join key. Duplicates yr after merge."},
+    {"@type": "PropertyValue", "name": "homeownership_rate", "description": "owner_occupied_units divided by total_occupied_units. Derived field."}
+  ],
+  "measurementTechnique": [
+    "FHFA: weighted repeat-sales methodology applied to mortgage transaction data from Fannie Mae, Freddie Mac, FHA, and VA loans.",
+    "Census ACS: 5-year pooled survey estimates collected by the U.S. Census Bureau."
+  ],
+  "citation": [
+    "Federal Housing Finance Agency. House Price Index Master File. https://www.fhfa.gov/data/hpi/datasets",
+    "U.S. Census Bureau. American Community Survey 5-Year Estimates. https://www.census.gov/data/developers/data-sets/acs-5year.html"
+  ]
+}

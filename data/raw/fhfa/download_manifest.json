@@ -1,16 +1,34 @@
 [
   {
     "filename": "hpi_master.csv",
-    "url": "https://www.fhfa.gov/hpi/download/monthly/hpi_master.csv",
-    "sha256": "1b7835ee12ab025275fae6f16038d9d4c73010752bb2a4ab0eacf300b19ac01d",
-    "size_kb": 12869.3,
-    "downloaded": "2026-04-05T23:17:07.405366"
+    "file_format": "CSV",
+    "source": {
+      "url": "https://www.fhfa.gov/hpi/download/monthly/hpi_master.csv",
+      "provider": "Federal Housing Finance Agency (FHFA)",
+      "access_method": "direct HTTP download"
+    },
+    "integrity": {
+      "sha256": "d896d5070198062688d06c65559dc649c879b878d705783909915810180bd1e3",
+      "size_kb": 12870.5,
+      "row_count": 133226
+    },
+    "version": "2026-Q2",
+    "downloaded_at": "2026-05-07T01:19:21Z"
   },
   {
     "filename": "hpi_exp_metro.txt",
-    "url": "https://www.fhfa.gov/hpi/download/quarterly_datasets/hpi_exp_metro.txt",
-    "sha256": "a005f91a9484e414781d639e26921013c898fec20ad2baadbb962f6c076e9e58",
-    "size_kb": 486.9,
-    "downloaded": "2026-04-05T23:17:07.878840"
+    "file_format": "TXT",
+    "source": {
+      "url": "https://www.fhfa.gov/hpi/download/quarterly_datasets/hpi_exp_metro.txt",
+      "provider": "Federal Housing Finance Agency (FHFA)",
+      "access_method": "direct HTTP download"
+    },
+    "integrity": {
+      "sha256": "a005f91a9484e414781d639e26921013c898fec20ad2baadbb962f6c076e9e58",
+      "size_kb": 486.9,
+      "row_count": 7000
+    },
+    "version": "2026-Q2",
+    "downloaded_at": "2026-05-07T01:19:21Z"
   }
 ]

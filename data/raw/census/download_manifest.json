@@ -1,26 +1,89 @@
 [
   {
-    "filename": "acs_5yr_2015.csv",
-    "year": 2015,
-    "sha256": "cf0c2b46e3276db64314c02380f5bb2df39ffa42f4d8596f738d83345f9d95c3",
-    "size_kb": 79.2,
-    "rows": 929,
-    "downloaded": "2026-04-05T23:17:17.422089"
+    "filename": "acs_5yr_2014.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://api.census.gov/data/2014/acs/acs5",
+      "provider": "U.S. Census Bureau",
+      "access_method": "REST API",
+      "dataset": "ACS 5-year estimates",
+      "geography": "metropolitan statistical area/micropolitan statistical area:*",
+      "variables": [
+        "NAME",
+        "B19013_001E",
+        "B01003_001E",
+        "B01002_001E",
+        "B15003_022E",
+        "B15003_023E",
+        "B25003_001E",
+        "B25003_002E",
+        "B25077_001E"
+      ]
+    },
+    "integrity": {
+      "sha256": "484c8b2a0388440af3171d87a9669f7e5ce3863abcbafcc734aaacbb8d1b5f6c",
+      "size_kb": 79.2,
+      "row_count": 929
+    },
+    "version": "ACS 5-year 2014",
+    "downloaded_at": "2026-05-07T01:19:23Z"
   },
   {
     "filename": "acs_5yr_2019.csv",
-    "year": 2019,
-    "sha256": "c0310157634ee2e38dac19a564e645b0d5e546c88f5060ba92b5b05f73e098c8",
-    "size_kb": 80.1,
-    "rows": 938,
-    "downloaded": "2026-04-05T23:17:18.576085"
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://api.census.gov/data/2019/acs/acs5",
+      "provider": "U.S. Census Bureau",
+      "access_method": "REST API",
+      "dataset": "ACS 5-year estimates",
+      "geography": "metropolitan statistical area/micropolitan statistical area:*",
+      "variables": [
+        "NAME",
+        "B19013_001E",
+        "B01003_001E",
+        "B01002_001E",
+        "B15003_022E",
+        "B15003_023E",
+        "B25003_001E",
+        "B25003_002E",
+        "B25077_001E"
+      ]
+    },
+    "integrity": {
+      "sha256": "c0310157634ee2e38dac19a564e645b0d5e546c88f5060ba92b5b05f73e098c8",
+      "size_kb": 80.1,
+      "row_count": 938
+    },
+    "version": "ACS 5-year 2019",
+    "downloaded_at": "2026-05-07T01:19:23Z"
   },
   {
-    "filename": "acs_5yr_2022.csv",
-    "year": 2022,
-    "sha256": "8a675477ff9573e51ea5478f78c9e8beec983fb0960a3e097740e10bf435e37a",
-    "size_kb": 80.4,
-    "rows": 939,
-    "downloaded": "2026-04-05T23:17:19.695934"
+    "filename": "acs_5yr_2024.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://api.census.gov/data/2024/acs/acs5",
+      "provider": "U.S. Census Bureau",
+      "access_method": "REST API",
+      "dataset": "ACS 5-year estimates",
+      "geography": "metropolitan statistical area/micropolitan statistical area:*",
+      "variables": [
+        "NAME",
+        "B19013_001E",
+        "B01003_001E",
+        "B01002_001E",
+        "B15003_022E",
+        "B15003_023E",
+        "B25003_001E",
+        "B25003_002E",
+        "B25077_001E"
+      ]
+    },
+    "integrity": {
+      "sha256": "4e1262b7b21a3995b576535c86ad0995d6d9c1f05c532a169fda6846f0a827b7",
+      "size_kb": 80.4,
+      "row_count": 935
+    },
+    "version": "ACS 5-year 2024",
+    "downloaded_at": "2026-05-07T01:19:24Z"
   }
 ]
