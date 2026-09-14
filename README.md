@@ -7,7 +7,7 @@ Spring 2026
 
 Housing affordability trend analysis. I integrate the FHFA House Price Index with U.S. Census ACS demographic and economic indicators across U.S. metropolitan areas.
 
-This is the IS477 final project. The ML and scenario modeling work continues post-course in a separate repository.
+The pipeline in this repository root is the IS477 final project, tagged `final-project`. The modeling work that builds on it lives in `ml/` and is in progress.
 
 ## The Contributors
 
@@ -150,22 +150,23 @@ This project uses a tabular data model. Raw and integrated datasets are CSV. JSO
 
 ```
 IS477-SP26/
-├── scripts/                     acquisition + integration scripts
-├── data/
-│   ├── raw/
-│   │   ├── fhfa/                pulled from FHFA + manifest
-│   │   └── census/              pulled from Census API + manifest
-│   └── integrated/              merged output (final dataset)
-├── results/
-│   └── visualizations/          5 PNG charts
-├── README.md                    project report
-├── ProjectPlan.md               milestone 2 deliverable
-├── StatusReport.md              milestone 3 deliverable
-├── LICENSE                      MIT for code, public domain for data
-├── metadata.jsonld              Schema.org Dataset description
-├── Snakefile                    workflow definition
-├── run_all.py                   simple Python wrapper
-└── requirements.txt             pinned dependencies
+|-- scripts/                     acquisition + integration scripts
+|-- data/
+|   |-- raw/
+|   |   |-- fhfa/                pulled from FHFA + manifest
+|   |   `-- census/              pulled from Census API + manifest
+|   `-- integrated/              merged output (final dataset)
+|-- results/
+|   `-- visualizations/          5 PNG charts
+|-- ml/                          modeling work, see ml/MILESTONES.md
+|-- README.md                    project report
+|-- ProjectPlan.md               milestone 2 deliverable
+|-- StatusReport.md              milestone 3 deliverable
+|-- LICENSE                      MIT for code, public domain for data
+|-- metadata.jsonld              Schema.org Dataset description
+|-- Snakefile                    workflow definition
+|-- run_all.py                   simple Python wrapper
+`-- requirements.txt             pinned dependencies
 ```
 
 Naming follows a few simple rules. Raw files keep their source name. Integrated outputs use compound names showing the join. Manifests are always `download_manifest.json` inside each source folder. Visualizations use snake_case descriptive names.
@@ -254,16 +255,15 @@ The five visualizations in `results/visualizations/` are the histogram of HPI di
 
 ## The Future Work
 
-The work continues post-course in a separate repository at `Portfolio/project-big-shoulders/`. That repository reads this project's `hpi_census_merged.csv` as input. The handoff is one-way. The post-course repo never edits this project's outputs.
+The modeling work continues in `ml/` in this repository. It reads `data/integrated/hpi_census_merged.csv` as input and never edits it. `ml/MILESTONES.md` is the plan from here.
 
 ```
-THIS REPO    (complete for IS477 scope)
-   |         Produces: data/integrated/hpi_census_merged.csv
+pipeline (repo root, tagged final-project)
+   |         produces data/integrated/hpi_census_merged.csv
    |         1,101 rows x 19 cols, 373 metros, 3 years
    |   read-only handoff
    v
-Portfolio/project-big-shoulders    ML, scenarios, dashboard (post-course)
-                                   Reads merged.csv as input
+ml/        features, baseline models, scenarios, dashboard
 ```
 
 Five threads continue post-course.

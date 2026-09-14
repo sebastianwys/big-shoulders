@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "big-shoulders"
+version = "0.0.1"
+description = "modeling on the project big shoulders housing dataset"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

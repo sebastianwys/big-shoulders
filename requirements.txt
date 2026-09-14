@@ -1,4 +1,4 @@
-# IS477-SP26 — actual project dependencies (lean)
+# IS477-SP26 project dependencies (lean)
 # Original 119-package class template kept as requirements-class-template.txt
 matplotlib>=3.8.0
 numpy>=1.26.0

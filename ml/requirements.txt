@@ -1,0 +1,21 @@
+# ml dependencies. the input csv comes from the pipeline in the repo root
+
+# data
+pandas>=2.1.0
+numpy>=1.26.0
+pyarrow>=14.0.0
+
+# ml, wave 1
+scikit-learn>=1.4.0
+
+# charts
+matplotlib>=3.8.0
+seaborn>=0.13.0
+plotly>=5.17.0
+
+# notebooks
+jupyter>=1.0.0
+
+# deferred until the wave starts:
+#   torch, wave 2: pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   streamlit, wave 3
