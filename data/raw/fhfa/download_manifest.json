@@ -8,12 +8,12 @@
       "access_method": "direct HTTP download"
     },
     "integrity": {
-      "sha256": "d896d5070198062688d06c65559dc649c879b878d705783909915810180bd1e3",
-      "size_kb": 12870.5,
-      "row_count": 133226
+      "sha256": "f7eca3f886f0bf58d59554df9dfea6e500642148ce473d1e0ac81fd92fc4cc86",
+      "size_kb": 16752.9,
+      "row_count": 186011
     },
-    "version": "2026-Q2",
-    "downloaded_at": "2026-05-07T01:19:21Z"
+    "version": "2026-Q3",
+    "downloaded_at": "2026-09-14T23:12:18Z"
   },
   {
     "filename": "hpi_exp_metro.txt",
@@ -24,11 +24,11 @@
       "access_method": "direct HTTP download"
     },
     "integrity": {
-      "sha256": "a005f91a9484e414781d639e26921013c898fec20ad2baadbb962f6c076e9e58",
-      "size_kb": 486.9,
-      "row_count": 7000
+      "sha256": "bc94d2ddfb018fb683ff56102319cbe467e197606d48295beb3462c579d7cb60",
+      "size_kb": 3415.9,
+      "row_count": 58220
     },
-    "version": "2026-Q2",
-    "downloaded_at": "2026-05-07T01:19:21Z"
+    "version": "2026-Q3",
+    "downloaded_at": "2026-09-14T23:12:19Z"
   }
 ]

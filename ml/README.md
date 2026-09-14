@@ -16,7 +16,7 @@ Modeling on top of the pipeline in the repo root. The pipeline is complete for t
 | rows x cols | 1,101 x 19 |
 | metros | 373 |
 | years | 2014, 2019, 2024 |
-| sha256 | `08c906a7f43ec7938c22ee01c2ab84ccee662acafe1c6195796e277c69dd6bcc` |
+| sha256 | `c3d1629e4de65f350c8b7fb2c0d82455fd57fbc012a16a3b33cac53b2f014889` |
 
 Read only. This folder never writes to `data/`. If the pipeline re-runs, its scripts rewrite the file and the hash in the loader is updated in the same commit.
 
