@@ -1,9 +1,6 @@
-venv/
-.venv/
-__pycache__/
-*.py[cod]
-.DS_Store
-.ipynb_checkpoints/
-.vscode/
-.idea/
+# zillow research csvs are fetched, not redistributed. the manifest records
+# their sha256 and vintage, and the derived per-metro values ship in the map json
+data/raw/zillow/*.csv
+
+# snakemake run metadata and logs
 .snakemake/

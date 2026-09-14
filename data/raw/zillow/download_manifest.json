@@ -1,0 +1,38 @@
+[
+  {
+    "filename": "zhvi_metro.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://files.zillowstatic.com/research/public_csvs/zhvi/Metro_zhvi_uc_sfrcondo_tier_0.33_0.67_sm_sa_month.csv",
+      "provider": "Zillow Research",
+      "access_method": "Direct HTTP download",
+      "dataset": "ZHVI, all homes, mid tier, smoothed, seasonally adjusted, monthly, metro"
+    },
+    "integrity": {
+      "sha256": "9d8c9d0c78b9b4247f5cb106cacbe566f7593fc04d233872c37c0972dd180c5e",
+      "size_kb": 4354.8,
+      "row_count": 895
+    },
+    "version": "through 2026-07-31",
+    "downloaded_at": "2026-09-14T23:31:27Z",
+    "notes": "Data provided by Zillow Research (zillow.com/research/data). Zillow terms of use apply."
+  },
+  {
+    "filename": "zori_metro.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://files.zillowstatic.com/research/public_csvs/zori/Metro_zori_uc_sfrcondomfr_sm_month.csv",
+      "provider": "Zillow Research",
+      "access_method": "Direct HTTP download",
+      "dataset": "ZORI, all homes plus multifamily, smoothed, monthly, metro"
+    },
+    "integrity": {
+      "sha256": "101b64c46ec30a929b69ccd64ade2446951830a866e315090d9c61d7ee749b4d",
+      "size_kb": 1030.1,
+      "row_count": 752
+    },
+    "version": "through 2026-07-31",
+    "downloaded_at": "2026-09-14T23:31:27Z",
+    "notes": "Data provided by Zillow Research (zillow.com/research/data). Zillow terms of use apply."
+  }
+]

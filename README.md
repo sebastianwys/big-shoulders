@@ -152,11 +152,18 @@ big-shoulders/
 |-- data/
 |   |-- raw/
 |   |   |-- fhfa/                pulled from FHFA + manifest
-|   |   `-- census/              pulled from Census API + manifest
+|   |   |-- census/              pulled from Census API + manifest
+|   |   |-- gazetteer/           cbsa centroids + manifest (bot)
+|   |   |-- zillow/              zhvi and zori manifest (bot, csvs not committed)
+|   |   |-- bls/                 metro unemployment + manifest (bot)
+|   |   `-- fred/                mortgage rate + manifest (bot)
 |   `-- integrated/              merged output (final dataset)
 |-- results/
 |   `-- visualizations/          5 PNG charts
 |-- ml/                          modeling work, see ml/MILESTONES.md
+|-- bot/                         collectors and the map data build
+|-- web/                         react and leaflet map of the metros
+|-- tests/                       pipeline and bot tests, python run_tests.py
 |-- README.md                    project report
 |-- LICENSE                      MIT for code, public domain for data
 |-- metadata.jsonld              Schema.org Dataset description
@@ -343,6 +350,12 @@ Outputs land in:
 | `results/visualizations/` | 5 PNGs |
 
 To verify integrity, compare your computed SHA-256 hashes against the committed manifests. Census files should match, because each ACS vintage endpoint is fixed. FHFA files will not, because `hpi_master.csv` is a live file that FHFA revises every quarter. The committed `data/raw/fhfa/` is the archived snapshot this report describes. To regenerate the committed outputs from it without downloading, run `snakemake --cores 1 --forcerun integrate` and compare the merged file to the hash in `ml/README.md`.
+
+## The Bot and the Map
+
+`bot/` collects four more sources on a monthly GitHub Actions schedule and rebuilds `web/public/data/metros.json`: Census Gazetteer centroids for the 373 metros, Zillow ZHVI and ZORI, BLS metro unemployment, and the FRED 30-year mortgage rate. Each lands in `data/raw/<source>/` with the same manifest as FHFA and Census. Run it by hand from the root with `python -m bot.run_bot`. It needs `FRED_API_KEY`, and `BLS_API_KEY` for the 2014 unemployment values; without the BLS key it pulls 2015 onward within the keyless quota.
+
+`web/` is a React and Leaflet map of those metros, colored by a chosen metric, with a detail panel per metro. It is static, reads the committed JSON, and deploys to Cloudflare Pages from the `web` directory. Settings are in `web/README.md`.
 
 ## The References
 
