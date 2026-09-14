@@ -94,6 +94,9 @@ def main():
     fhfa_ids = set(hpi_msa["place_id"].unique())
     census_ids = set(census["cbsa_code"].unique())
     overlap = fhfa_ids & census_ids  # below 300 = cbsa boundaries probably changed
+    overlap_df = pd.DataFrame(overlap)
+    print(overlap_df.head())
+    print(f"Printed The Overlap: {len(overlap)}")
 
     print(f"FHFA MSA codes: {len(fhfa_ids)}")
     print(f"Census CBSA codes: {len(census_ids)}")
