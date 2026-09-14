@@ -1,5 +1,4 @@
-# IS477-SP26 project dependencies (lean)
-# Original 119-package class template kept as requirements-class-template.txt
+# pipeline dependencies for the repo root. the modeling work in ml/ has its own requirements.txt
 matplotlib>=3.8.0
 numpy>=1.26.0
 openpyxl>=3.1.0

@@ -1,17 +1,12 @@
 # Project Big Shoulders
 
-Sebastian Wysocki
-University of Illinois Urbana-Champaign
-IS477 Data Management, Curation & Reproducibility
-Spring 2026
-
 Housing affordability trend analysis. I integrate the FHFA House Price Index with U.S. Census ACS demographic and economic indicators across U.S. metropolitan areas.
 
-The pipeline in this repository root is the IS477 final project, tagged `final-project`. The modeling work that builds on it lives in `ml/` and is in progress.
+This started as my IS477 final project at the University of Illinois. The pipeline in the repository root is that project, tagged `final-project`. The modeling work that builds on it lives in `ml/` and is in progress.
 
 ## The Contributors
 
-Sebastian Wysocki, working individually (approved). I handled every part: dataset selection, acquisition scripts, exploratory analysis, integration, quality assessment, cleaning, visualizations, and this report. All commits in the Git history are mine.
+Sebastian Wysocki, working individually. I handled every part: dataset selection, acquisition scripts, exploratory analysis, integration, quality assessment, cleaning, visualizations, and this report. All commits in the Git history are mine.
 
 ## The Summary
 
@@ -149,7 +144,7 @@ This is how the two datasets connect.
 This project uses a tabular data model. Raw and integrated datasets are CSV. JSON manifests track integrity and provenance. PNG files store visualizations. CSV is human-readable, version-controllable, and works directly with pandas. The dataset is small enough that no relational database is needed. Per-source folders keep raw files separated from derived files.
 
 ```
-IS477-SP26/
+big-shoulders/
 |-- scripts/                     acquisition + integration scripts
 |-- data/
 |   |-- raw/
@@ -160,8 +155,6 @@ IS477-SP26/
 |   `-- visualizations/          5 PNG charts
 |-- ml/                          modeling work, see ml/MILESTONES.md
 |-- README.md                    project report
-|-- ProjectPlan.md               milestone 2 deliverable
-|-- StatusReport.md              milestone 3 deliverable
 |-- LICENSE                      MIT for code, public domain for data
 |-- metadata.jsonld              Schema.org Dataset description
 |-- Snakefile                    workflow definition
@@ -177,7 +170,7 @@ This project follows the DCC (Digital Curation Centre) Curation Lifecycle Model.
 
 | DCC Phase | This Project |
 | --- | --- |
-| Conceptualise | `ProjectPlan.md` defines research questions and dataset selection |
+| Conceptualise | the project plan defined the research questions and dataset selection |
 | Create or Receive | `scripts/download_fhfa.py`, `scripts/download_census.py` |
 | Appraise and Select | Filter to MSA, quarterly, traditional, all-transactions |
 | Ingest | Save to `data/raw/` with SHA-256 manifest |
@@ -295,7 +288,7 @@ The third challenge was the HPI type/flavor duplication. I caught this during a 
 Set up the environment first.
 
 ```bash
-cd CourseProjects/IS477-SP26
+cd big-shoulders
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
