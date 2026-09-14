@@ -21,14 +21,14 @@ Sebastian Wysocki: Working individually, approved. I'm responsible for all aspec
 
 ## The Datasets:
 
-**FHFA House Price Index (HPI):** The dataset measures changes in single-family home values using a weighted repeat-sales methodology applied to mortgage transaction data from Fannie Mae & Freddie Mac. The best part of having access to this dataset is the fact that it has true view into the housing market, not only do we have access to Fannie & Freddie data, we have access to data from VA loans and FHA loans, allowing us to fully capture the population and collect insights. It is available as a direct CSV download from fhfa.gov. As a U.S. government work product, falls under public domain with no license restrictions on redistribution or derivative use.
+FHFA House Price Index (HPI): The dataset measures changes in single-family home values using a weighted repeat-sales methodology applied to mortgage transaction data from Fannie Mae & Freddie Mac. The best part of having access to this dataset is the fact that it has true view into the housing market, not only do we have access to Fannie & Freddie data, we have access to data from VA loans and FHA loans, allowing us to fully capture the population and collect insights. It is available as a direct CSV download from fhfa.gov. As a U.S. government work product, falls under public domain with no license restrictions on redistribution or derivative use.
 
 - The Source: https://www.fhfa.gov/data/hpi/datasets?tab=master-hpi-data
 - The Method of Access: Direct CSV download from FHFA
 - The License: Public domain (U.S. government mandates full open-source)
 - The Format: CSV
 
-**American Community Survey (ACS):** What needs to be understood is that the ACS is a survey conducted by the U.S. Census Bureau. This survey is done in various time formats but what needs to be understood is that the 5-year estimates offer by far the most reliable data for smaller geographies including metro areas, counties, and census trackers, which is why I'll be embedding the 5-year survey. The data is accessed through the Census Bureau REST API, which return JSON responses for requested data. Census data is public domain and is once again falls under public domain with no license restrictions on redistribution or derivative use.
+American Community Survey (ACS): What needs to be understood is that the ACS is a survey conducted by the U.S. Census Bureau. This survey is done in various time formats but what needs to be understood is that the 5-year estimates offer by far the most reliable data for smaller geographies including metro areas, counties, and census trackers, which is why I'll be embedding the 5-year survey. The data is accessed through the Census Bureau REST API, which return JSON responses for requested data. Census data is public domain and is once again falls under public domain with no license restrictions on redistribution or derivative use.
 
 - The Source: https://www.census.gov/data/developers/data-sets/acs-5year.html
 - The Method of Access: REST API, done through the census.gov website
@@ -39,15 +39,15 @@ Just to note that no Kaggle datasets are used in this project, this is due to gu
 
 ## The Timeline
 
-**Period 1 (Estimating March 8-15):** Finalize project plan, set up repo, build FHFA and Census ACS acquisition scripts, submit project-plan release when the due date will be released
+Period 1 (Estimating March 8-15): Finalize project plan, set up repo, build FHFA and Census ACS acquisition scripts, submit project-plan release when the due date will be released
 
-**Period 2 (Estimating March 15-30):** Profile datasets through EDA, design storage strategy, integrate on CBSA/FIPS codes, understand and document the schema, take notes for report
+Period 2 (Estimating March 15-30): Profile datasets through EDA, design storage strategy, integrate on CBSA/FIPS codes, understand and document the schema, take notes for report
 
-**Period 3 (Estimating April 1-12):** Assess data quality across raw & integrated datasets, clean missing values, outliers, & alignment issues
+Period 3 (Estimating April 1-12): Assess data quality across raw & integrated datasets, clean missing values, outliers, & alignment issues
 
-**Period 4 (Estimating April 12-19):** Run analysis & build visualizations, automate and document end-to-end workflow, then submit status report and release tag
+Period 4 (Estimating April 12-19): Run analysis & build visualizations, automate and document end-to-end workflow, then submit status report and release tag
 
-**Period 5 (Estimating April 19-TBA):** Write final report in README.md, add metadata documentation, verify reproducibility, submit final-project release
+Period 5 (Estimating April 19-TBA): Write final report in README.md, add metadata documentation, verify reproducibility, submit final-project release
 
 ## The Possible Constraints
 

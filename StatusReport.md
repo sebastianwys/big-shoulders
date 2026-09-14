@@ -25,11 +25,11 @@ Five visualizations are saved in `results/visualizations/`. The correlation matr
 The top 15 metros by HPI are dominated by Western markets (E.g Austin, Salt Lake City, Denver, Boise, Portland, Phoenix) which aligns with the post-2015 migration and price boom in those regions.
 
 ## The Timeline
-**Period 1 (March 8th-15th) -- Complete:** Set up repo, finalized project plan, submitted project-plan release. 
-**Period 2 (March 15th-April 5th) -- Complete:** Built acquisition scripts for both datasets, ran EDA and profiling, integrated datasets on CBSA codes, generated initial visualizations.
-**Period 3 (April 6th-12th) -- In Progress:** Data quality assessment on the integrated dataset, cleaning operations for missing values and geographic code mismatches, deeper analysis addressing each research question.
-**Period 4 (April 12th-19th) -- Planned:** Build automated end-to-end workflow (run_all.sh or Snakemake), finalize analysis and visualizations, status report submission.
-**Period 5 (April 19-TBA) -- Plannthed:** Write final report in README.md, add metadata documentation (Schema.org/DCAT), verify full reproducibility, submit final-project release.
+Period 1 (March 8th-15th) -- Complete: Set up repo, finalized project plan, submitted project-plan release. 
+Period 2 (March 15th-April 5th) -- Complete: Built acquisition scripts for both datasets, ran EDA and profiling, integrated datasets on CBSA codes, generated initial visualizations.
+Period 3 (April 6th-12th) -- In Progress: Data quality assessment on the integrated dataset, cleaning operations for missing values and geographic code mismatches, deeper analysis addressing each research question.
+Period 4 (April 12th-19th) -- Planned: Build automated end-to-end workflow (run_all.sh or Snakemake), finalize analysis and visualizations, status report submission.
+Period 5 (April 19-TBA) -- Plannthed: Write final report in README.md, add metadata documentation (Schema.org/DCAT), verify full reproducibility, submit final-project release.
 
 ## The Changes from OG Plan
 The original plan included pulling Census ACS data for 2010 to use as a Great Recession baseline. The 2010 ACS 5-year API call failed,  due to differences in the variable codes or API structure for that vintage. I adjusted to use 2015, 2019, and 2022, which still captures pre-COVID vs post-COVID shifts & a decade of demographic change. I may revisit the 2010 pull with adjusted variable codes if time allows, but the current three-year window is sufficient to answer the research questions.
