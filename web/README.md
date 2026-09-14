@@ -13,6 +13,9 @@ npm run test       # vitest, offline
 npm run build      # typecheck then vite build into dist/
 ```
 
-Cloudflare Pages settings: framework preset Vite, root directory `web`, build
-command `npm ci && npm run build`, output directory `dist`, no environment
-variables. Tiles are OpenStreetMap, attribution is in the map and the footer.
+Cloudflare, Workers flow (Workers and Pages, Create, import the repository):
+root directory `web`, build command `npm ci && npm run build`, deploy command
+`npx wrangler deploy`, no environment variables. `wrangler.jsonc` points the
+Worker at `dist` as static assets. The older Pages flow works too: same root
+and build command, output directory `dist`. Tiles are OpenStreetMap,
+attribution is in the map and the footer.
