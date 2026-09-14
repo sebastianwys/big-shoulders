@@ -1,3 +1,5 @@
+import os
+import sys
 import requests
 import pandas as pd
 import json
@@ -10,6 +12,21 @@ RAW_DIR = BASE_DIR / "data" / "raw" / "census"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
 BASE_URL = "https://api.census.gov/data/{year}/acs/acs5"
+
+# keyless catalog of every census api dataset, used to find the newest vintage
+CATALOG_URL = "https://api.census.gov/data.json"
+
+# the pinned end years. discovery writes this file, the pipeline reads it, so a
+# rerun never silently moves the study forward when census publishes a vintage
+VINTAGES_FILE = RAW_DIR / "vintages.json"
+
+# b15003 does not exist before the 2012 vintage. earlier endpoints carry b15002,
+# which is split by sex, so the variable list below 404s there
+MIN_VINTAGE = 2012
+
+# three non-overlapping 5-year windows, 15 years of coverage
+SPAN = 5
+N_BATCHES = 3
 
 # add codes here to pull more columns
 # B19013_001E = median household income
@@ -32,10 +49,6 @@ VARIABLES = [
     "B25077_001E",
 ]
 
-# non-overlapping 5-year windows. 2014=2010-2014, 2019=2015-2019, 2024=2020-2024
-# 2010 dropped, api errors for that vintage
-YEARS = [2014, 2019, 2024]
-
 
 # same chunked hash as fhfa
 def compute_sha256(filepath):
@@ -49,18 +62,120 @@ def compute_sha256(filepath):
     return sha256.hexdigest()
 
 
+# the api key. environment first, then an optional dotenv file named by
+# CENSUS_ENV_FILE. no local path is hardcoded so this file stays publishable
+def load_api_key(var="CENSUS_API_KEY", env_file=None):
+    key = os.environ.get(var, "").strip()
+    if key:
+        return key
+
+    env_file = env_file or os.environ.get("CENSUS_ENV_FILE")
+    if env_file:
+        for line in Path(env_file).read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            name, _, value = line.partition("=")
+            if name.strip() == var:
+                return value.strip().strip('"').strip("'")
+
+    raise RuntimeError(
+        f"{var} is not set. export it, or point CENSUS_ENV_FILE at a dotenv file "
+        "that defines it. signup: https://api.census.gov/data/key_signup.html"
+    )
+
+
+# keep the key out of logs. requests puts the full url, query string included,
+# into HTTPError messages
+def redact(text, key):
+    return text.replace(key, "***") if key else text
+
+
+# the census dcat catalog. keyless, tens of mb, so fetch once and never in a loop
+def fetch_catalog(timeout=60):
+    response = requests.get(CATALOG_URL, timeout=timeout)
+    response.raise_for_status()
+    return response.json()
+
+
+# newest published end year for a dataset. pure, so it tests offline
+def latest_vintage(catalog, dataset=("acs", "acs5")):
+    vintages = [
+        entry.get("c_vintage")
+        for entry in catalog.get("dataset", [])
+        if entry.get("c_dataset") == list(dataset) and entry.get("c_vintage")
+    ]
+    if not vintages:
+        raise RuntimeError(f"no vintages for {'/'.join(dataset)} in the catalog")
+    return max(vintages)
+
+
+# inclusive (start, end) for one vintage. 2014 -> (2010, 2014), five years
+def window(end_year, span=SPAN):
+    return (end_year - span + 1, end_year)
+
+
+# end years newest first. 2024 -> [2024, 2019, 2014], covering 2010 to 2024.
+# the floor applies to the end year because that is the endpoint we request
+def acs_batches(latest, n_batches=N_BATCHES, span=SPAN):
+    years = [latest - i * span for i in range(n_batches)]
+    if years[-1] < MIN_VINTAGE:
+        raise ValueError(
+            f"oldest vintage {years[-1]} is below the {MIN_VINTAGE} floor where "
+            "B15003 first appears. lower n_batches or change the variable list"
+        )
+    return years
+
+
+# the end years to pull. pinned unless refresh is set, so the dag and the
+# manifest stay reproducible across runs
+def resolve_years(refresh=False):
+    if VINTAGES_FILE.exists() and not refresh:
+        return json.loads(VINTAGES_FILE.read_text())["years"]
+
+    latest = latest_vintage(fetch_catalog())
+    years = acs_batches(latest)
+
+    pin = {
+        "years": years,
+        "windows": {str(y): list(window(y)) for y in years},
+        "span": SPAN,
+        "latest_available": latest,
+        "catalog": CATALOG_URL,
+        "resolved_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }
+    VINTAGES_FILE.write_text(json.dumps(pin, indent=2) + "\n")
+    print(f"Pinned vintages {years}, latest available {latest}")
+
+    return years
+
+
 # pull one year from the api. everything comes back as strings
-def fetch_acs_data(year):
+def fetch_acs_data(year, api_key):
     print(f"Fetching ACS 5-year data for {year}...")
 
     url = BASE_URL.format(year=year)
     params = {
         "get": ",".join(VARIABLES),
-        "for": "metropolitan statistical area/micropolitan statistical area:*"  # * = all msas
+        "for": "metropolitan statistical area/micropolitan statistical area:*",  # * = all msas
+        "key": api_key,
     }
 
-    response = requests.get(url, params=params)
-    response.raise_for_status()
+    response = requests.get(url, params=params, timeout=60)
+
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as e:
+        raise requests.HTTPError(redact(str(e), api_key)) from None
+
+    # a missing, unactivated or invalid key redirects to an html page that still
+    # returns 200, so the status code alone does not prove this is data
+    content_type = response.headers.get("content-type", "")
+    if "json" not in content_type:
+        raise RuntimeError(
+            f"expected json from {url}, got {content_type}. usually a missing, "
+            "unactivated or invalid CENSUS_API_KEY"
+        )
 
     data = response.json()
     headers = data[0]  # row 0 is column names
@@ -74,19 +189,27 @@ def fetch_acs_data(year):
 
 # remove stale years, pull fresh data, write combined csv and manifest
 def main():
-    # if YEARS changed, drop old per-year csvs
+    years = resolve_years(refresh="--refresh-vintages" in sys.argv)
+    api_key = load_api_key()
+
+    start, end = window(years[-1])[0], years[0]
+    print(f"Vintages {years}, covering {start} to {end}")
+
+    # if the pinned years changed, drop old per-year csvs
     for stale in RAW_DIR.glob("acs_5yr_*.csv"):
         year_str = stale.stem.replace("acs_5yr_", "")
-        if year_str.isdigit() and int(year_str) not in YEARS:
+        if year_str.isdigit() and int(year_str) not in years:
             stale.unlink()
             print(f"Removed stale file: {stale.name}")
 
     manifest = []
     all_frames = []
 
-    for year in YEARS:
+    # pull oldest first so the combined csv and the manifest stay in ascending
+    # year order. acs_batches returns newest first
+    for year in sorted(years):
         try:
-            df = fetch_acs_data(year)
+            df = fetch_acs_data(year, api_key)
             all_frames.append(df)
 
             filename = f"acs_5yr_{year}.csv"
@@ -103,7 +226,7 @@ def main():
                 "filename": filename,
                 "file_format": "CSV",
                 "source": {
-                    "endpoint": BASE_URL.format(year=year),
+                    "endpoint": BASE_URL.format(year=year),  # bare, no key
                     "provider": "U.S. Census Bureau",
                     "access_method": "REST API",
                     "dataset": "ACS 5-year estimates",
@@ -116,12 +239,13 @@ def main():
                     "row_count": len(df)
                 },
                 "version": f"ACS 5-year {year}",
+                "survey_window": list(window(year)),
                 "downloaded_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
             })
 
         except Exception as e:
             # type(e).__name__ tells you what kind of failure
-            print(f"  ERROR {year}: {type(e).__name__}: {e}")
+            print(f"  ERROR {year}: {type(e).__name__}: {redact(str(e), api_key)}")
             print(f"  Endpoint: {BASE_URL.format(year=year)}")
             print(f"  Variables attempted: {VARIABLES}")
             print(f"  This vintage may have different variable codes. Skipping.")

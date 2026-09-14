@@ -1,10 +1,20 @@
 # is477-sp26 workflow
 # does the same as run_all.py but tracks file deps so it only re-runs what changed
 
+import json
 import sys
+from pathlib import Path
 
 # python that started snakemake. same one runs each rule
 PYTHON = sys.executable
+
+# acs end years come from the pinned vintages file so the dag matches what the
+# downloader writes. the fallback only applies before the first pin exists
+VINTAGES_FILE = Path("data/raw/census/vintages.json")
+if VINTAGES_FILE.exists():
+    CENSUS_YEARS = json.loads(VINTAGES_FILE.read_text())["years"]
+else:
+    CENSUS_YEARS = [2014, 2019, 2024]
 
 
 # rule all = the final outputs we want
@@ -28,12 +38,10 @@ rule download_fhfa:
         f"{PYTHON} scripts/download_fhfa.py"
 
 
-# pull 3 acs vintages, build combined csv, write manifest
+# pull the pinned acs vintages, build combined csv, write manifest
 rule download_census:
     output:
-        "data/raw/census/acs_5yr_2014.csv",
-        "data/raw/census/acs_5yr_2019.csv",
-        "data/raw/census/acs_5yr_2024.csv",
+        expand("data/raw/census/acs_5yr_{year}.csv", year=CENSUS_YEARS),
         "data/raw/census/acs_5yr_combined.csv",
         "data/raw/census/download_manifest.json"
     shell:

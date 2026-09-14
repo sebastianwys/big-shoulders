@@ -26,7 +26,11 @@
       "row_count": 929
     },
     "version": "ACS 5-year 2014",
-    "downloaded_at": "2026-05-07T01:19:23Z"
+    "survey_window": [
+      2010,
+      2014
+    ],
+    "downloaded_at": "2026-09-14T22:43:43Z"
   },
   {
     "filename": "acs_5yr_2019.csv",
@@ -55,7 +59,11 @@
       "row_count": 938
     },
     "version": "ACS 5-year 2019",
-    "downloaded_at": "2026-05-07T01:19:23Z"
+    "survey_window": [
+      2015,
+      2019
+    ],
+    "downloaded_at": "2026-09-14T22:43:44Z"
   },
   {
     "filename": "acs_5yr_2024.csv",
@@ -84,6 +92,10 @@
       "row_count": 935
     },
     "version": "ACS 5-year 2024",
-    "downloaded_at": "2026-05-07T01:19:24Z"
+    "survey_window": [
+      2020,
+      2024
+    ],
+    "downloaded_at": "2026-09-14T22:43:45Z"
   }
 ]

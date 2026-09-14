@@ -1,0 +1,25 @@
+{
+  "years": [
+    2024,
+    2019,
+    2014
+  ],
+  "windows": {
+    "2024": [
+      2020,
+      2024
+    ],
+    "2019": [
+      2015,
+      2019
+    ],
+    "2014": [
+      2010,
+      2014
+    ]
+  },
+  "span": 5,
+  "latest_available": 2024,
+  "catalog": "https://api.census.gov/data.json",
+  "resolved_at": "2026-09-14T22:43:21Z"
+}
