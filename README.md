@@ -34,7 +34,7 @@ Both datasets are U.S. government works in the public domain. There is no person
 
 ### The FHFA House Price Index
 
-The FHFA HPI master file is the U.S. government's official measure of single-family home value changes. It uses a weighted repeat-sales methodology applied to mortgage transaction data from Fannie Mae, Freddie Mac, FHA, and VA loans. The full file has approximately 133,000 rows spanning 1975 to 2026. It covers multiple index types, multiple geographic levels, and both monthly and quarterly frequencies.
+The FHFA HPI master file is the U.S. government's official measure of single-family home value changes. It uses a weighted repeat-sales methodology applied to mortgage transaction data from Fannie Mae, Freddie Mac, FHA, and VA loans. The full file has approximately 186,000 rows spanning 1975 to 2026 as of the September 2026 pull. It covers multiple index types, multiple geographic levels, and both monthly and quarterly frequencies.
 
 | Field | Value |
 | --- | --- |
@@ -43,10 +43,11 @@ The FHFA HPI master file is the U.S. government's official measure of single-fam
 | Provider | Federal Housing Finance Agency |
 | Access | Direct HTTP download |
 | License | Public domain |
-| Format | CSV, approximately 12.9 MB |
+| Format | CSV, approximately 16.8 MB |
 | Manifest | `data/raw/fhfa/download_manifest.json` |
+| Vintage | Pulled 2026-09-14. FHFA offers no vintage parameter, see The Challenges. |
 
-After filtering to the canonical inter-metro index (MSA, quarterly, traditional, all-transactions), the working slice is 70,243 rows across 410 unique MSAs.
+After filtering to the canonical inter-metro index (MSA, quarterly, traditional, all-transactions), the working slice is 71,072 rows across 410 unique MSAs.
 
 #### The FHFA Data Dictionary
 
@@ -62,6 +63,8 @@ After filtering to the canonical inter-metro index (MSA, quarterly, traditional,
 | `period` | int | Quarter (1 to 4). |
 | `index_nsa` | float | Non-seasonally adjusted HPI. The primary measure I use. |
 | `index_sa` | float | Seasonally adjusted HPI. 100 percent null at MSA level. Not used. |
+| `rstderr` | float | Populated only for the expanded-data series. Not used. |
+| `note` | string | Suppression notes for the expanded-data series. Not used. |
 
 ### The Census ACS 5-Year Estimates
 
@@ -206,7 +209,7 @@ I checked five quality dimensions during integration. Profile output is captured
 
 The most consequential issue I found was the CBSA code type mismatch. FHFA stores CBSA codes as strings. The Census API returns them as integers. The first time I ran the merge it produced zero rows. I diagnosed this as a data unavailability problem until profiling both sides showed identical numeric values stored under different types. The fix was a single line, `astype(str)` on the Census side. After that the join recovered the full 373-metro overlap.
 
-The second issue was the FHFA seasonally adjusted index. I noticed `index_sa` had 70,243 nulls out of 70,243 rows at the MSA traditional all-transactions filter. That is 100 percent missing. FHFA does not publish a seasonally adjusted index at that level. I switched to `index_nsa`, which has zero nulls. The script logs this so it is visible on every run.
+The second issue was the FHFA seasonally adjusted index. I noticed `index_sa` had 71,072 nulls out of 71,072 rows at the MSA traditional all-transactions filter. That is 100 percent missing. FHFA does not publish a seasonally adjusted index at that level. I switched to `index_nsa`, which has zero nulls. The script logs this so it is visible on every run.
 
 The third issue was Census suppression. The Census API returns the sentinel string `-666666666` for suppressed values rather than null. Without coercion, those sentinels would survive into the integrated dataset and corrupt every aggregation downstream. I run `pd.to_numeric` with `errors="coerce"` on all eight numeric variables. The post-coerce null rate is below 1 percent per variable.
 
@@ -275,13 +278,15 @@ The biggest lesson from this project is that data curation work is mostly diagno
 
 ## The Challenges
 
-Three challenges shaped this project. I want to call them out.
+Four challenges shaped this project. I want to call them out.
 
 The first challenge was the CBSA code type mismatch. FHFA stores CBSA codes as strings. The Census API returns them as integers. The initial merge produced zero overlapping rows. I diagnosed this as a data unavailability problem until profiling both sides revealed identical numeric values stored under different types. The fix was a single line, `astype(str)` on the Census side. The lesson was that profiling both sides of any join before merging is non-negotiable.
 
 The second challenge was the 2010 ACS API failure. The original plan included a 2010 vintage as a Great Recession baseline. The 2010 endpoint returned errors for the variable set that worked for 2015 and later. Variable codes and geography definitions in the ACS API changed pre-2012. I documented the failure mode, dropped 2010, and shifted to non-overlapping windows of 2014, 2019, 2024. That ended up being statistically cleaner anyway because the Census Comparison Profile methodology is built around non-overlapping intervals. The error handler in `download_census.py` now reports exception type, endpoint, and variables on any vintage failure, so the next failure of this kind is immediately diagnosable.
 
 The third challenge was the HPI type/flavor duplication. I caught this during a methodology audit, not during initial development. My original `groupby` included `hpi_type` and `hpi_flavor` in the keys, which preserved all HPI variants into the annual aggregation. Each Census row then duplicated across variants on the merge. Pre-fix the merge was 3.77 rows per metro across three years. Post-fix it is 2.95. The lesson was that an inner join can silently inflate row counts when one side has duplicated keys, and a `rows / unique_entities` check is a good sanity step.
+
+The fourth challenge was the FHFA vintage problem, found on 2026-09-14 while proving a clean start-to-finish run. The Census half reproduced byte for byte because every ACS endpoint carries its vintage in the URL. The FHFA half did not. `hpi_master.csv` is a live file with no vintage parameter, and between May and September FHFA added two quarters and two columns, expanded one series from 7,000 rows to 58,220, and revised the historical index. My merged dataset kept its 1,101 rows, but 1,094 changed value and its SHA-256 moved from `08c906a7` to `c3d1629e` with no code change. The lesson was that when a source cannot be addressed by vintage, the archived raw file in version control is the vintage. I adopted the September pull in one dedicated commit, so `git log -- data/raw/fhfa/hpi_master.csv` shows both snapshots.
 
 ## The Reproducing Steps
 
@@ -292,6 +297,12 @@ cd big-shoulders
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+```
+
+The Census API requires a key. Request one at https://api.census.gov/data/key_signup.html, click the activation link in the email, and export it. Without it the API returns an HTML page with a 200 status, which `download_census.py` detects.
+
+```bash
+export CENSUS_API_KEY=your_key_here
 ```
 
 Three options to run the pipeline. All produce the same outputs.
@@ -320,6 +331,8 @@ python scripts/download_census.py
 python scripts/eda_integrate.py
 ```
 
+The ACS end years are pinned in `data/raw/census/vintages.json`. A plain run reads the pin. `python scripts/download_census.py --refresh-vintages` re-resolves the newest vintage from the Census catalog and moves the window forward deliberately.
+
 Outputs land in:
 
 | Path | Contents |
@@ -329,13 +342,13 @@ Outputs land in:
 | `data/integrated/` | `hpi_census_merged.csv` |
 | `results/visualizations/` | 5 PNGs |
 
-To verify integrity, compare your computed SHA-256 hashes against the values in the committed manifests. A match confirms identical data. A mismatch means upstream FHFA or Census updated their files since I ran the original pipeline.
+To verify integrity, compare your computed SHA-256 hashes against the committed manifests. Census files should match, because each ACS vintage endpoint is fixed. FHFA files will not, because `hpi_master.csv` is a live file that FHFA revises every quarter. The committed `data/raw/fhfa/` is the archived snapshot this report describes. To regenerate the committed outputs from it without downloading, run `snakemake --cores 1 --forcerun integrate` and compare the merged file to the hash in `ml/README.md`.
 
 ## The References
 
 ### Datasets
 
-1. Federal Housing Finance Agency. *House Price Index Master File*. https://www.fhfa.gov/data/hpi/datasets?tab=master-hpi-data. Retrieved May 2026. Public domain.
+1. Federal Housing Finance Agency. *House Price Index Master File*. https://www.fhfa.gov/data/hpi/datasets?tab=master-hpi-data. Retrieved September 2026. Public domain.
 2. U.S. Census Bureau. *American Community Survey 5-Year Estimates*. Vintages 2010 to 2014, 2015 to 2019, 2020 to 2024. https://www.census.gov/data/developers/data-sets/acs-5year.html. Retrieved May 2026. Public domain.
 
 ### Methodology
