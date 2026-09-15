@@ -1,8 +1,8 @@
-# Loop
+# Project Loop
 
 Housing affordability trend analysis. I integrate the FHFA House Price Index with U.S. Census ACS demographic and economic indicators across U.S. metropolitan areas.
 
-This started as my IS477 final project at the University of Illinois, Project Big Shoulders. The pipeline in the repository root is that project, tagged `final-project`. The modeling work that builds on it lives in `ml/` and is in progress.
+This started as my IS477 final project at the University of Illinois, Project Loop. The pipeline in the repository root is that project, tagged `final-project`. The modeling work that builds on it lives in `ml/` and is in progress.
 
 ## The Contributors
 
