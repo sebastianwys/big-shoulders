@@ -6,6 +6,8 @@ import type { Metric } from "../lib/metrics";
 import { INK, NULL_GRAY, SURFACE } from "../lib/palette";
 import type { ColorScale } from "../lib/scale";
 import type { Metro } from "../types";
+import { studyShapes, type BoundaryIndex, type MapMode } from "../lib/boundaries";
+import { ShapeLayer } from "./ShapeLayer";
 
 const CENTER: [number, number] = [39.5, -98.35];
 const OSM = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -36,9 +38,11 @@ interface Props {
   scale: ColorScale;
   selectedCbsa: string | null;
   onSelect: (cbsa: string) => void;
+  mode: MapMode;
+  boundaries: BoundaryIndex | null;
 }
 
-export function MapView({ metros, metric, scale, selectedCbsa, onSelect }: Props) {
+export function MapView({ metros, metric, scale, selectedCbsa, onSelect, mode, boundaries }: Props) {
   // canvas with a hit tolerance so a 4px dot has a 24px target
   const renderer = useMemo(() => L.canvas({ tolerance: 8 }), []);
   // big metros first so small ones draw on top
@@ -48,11 +52,17 @@ export function MapView({ metros, metric, scale, selectedCbsa, onSelect }: Props
   );
   const selected = metros.find((m) => m.cbsa === selectedCbsa) ?? null;
   const signed = metric.kind === "diverging";
+  // dots stay up until the shapes are decoded, then the layers swap, never both
+  const shapes = useMemo(() => (boundaries ? studyShapes(metros, boundaries) : []), [metros, boundaries]);
+  const drawShapes = mode === "shapes" && shapes.length > 0;
 
   return (
     <MapContainer center={CENTER} zoom={4} minZoom={3} renderer={renderer} preferCanvas scrollWheelZoom>
       <TileLayer attribution={OSM_ATTRIBUTION} url={OSM} />
-      {ordered.map((m) => {
+      {drawShapes && (
+        <ShapeLayer shapes={shapes} metric={metric} scale={scale} selectedCbsa={selectedCbsa} onSelect={onSelect} />
+      )}
+      {!drawShapes && ordered.map((m) => {
         const value = metric.accessor(m);
         const missing = value === null;
         const isSelected = m.cbsa === selectedCbsa;

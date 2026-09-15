@@ -13,6 +13,20 @@ npm run test       # vitest, offline
 npm run build      # typecheck then vite build into dist/
 ```
 
+The Shapes toggle draws each metro as its boundary instead of a dot, from
+`public/data/boundaries.json`, a TopoJSON that `npm run boundaries` builds by
+downloading the Census cartographic boundary files for metros and metropolitan
+divisions and simplifying them with mapshaper. The zips stay in
+`data/raw/boundaries/` with a manifest; the TopoJSON is committed and fetched
+only when Shapes is first chosen.
+
+The metric menu is grouped (House prices, Housing market, Rents and
+affordability, People and migration, Supply) and only lists metrics the built
+json actually carries, so a source without a key yet stays hidden. The "as of"
+control picks the panel a metric is read at: 2014, 2019, 2024 or the source's
+latest month or year, with periods the metric lacks disabled and change figures
+like HPI growth having none. The legend caption names the source and date.
+
 Cloudflare, Workers flow (Workers and Pages, Create, import the repository):
 root directory `web`, build command `npm ci && npm run build`, deploy command
 `npx wrangler deploy`, no environment variables. `wrangler.jsonc` points the

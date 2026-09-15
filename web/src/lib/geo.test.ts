@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { geoNote } from "./geo";
+import { geoNote, parentMetricsNote } from "./geo";
 import type { Metro } from "../types";
 
 const base = { cbsa: "1", name: "x", lat: 0, lon: 0 } as unknown as Metro;
@@ -21,5 +21,17 @@ describe("geoNote", () => {
 
   it("handles data without the new fields", () => {
     expect(geoNote(base)).toBeNull();
+  });
+});
+
+describe("parentMetricsNote", () => {
+  it("is null without inherited metrics", () => {
+    expect(parentMetricsNote(base)).toBeNull();
+    expect(parentMetricsNote({ ...base, parent_metrics: [] })).toBeNull();
+  });
+
+  it("lists inherited metrics by label, deduplicated, unknown keys as they are", () => {
+    const m = { ...base, parent_metrics: ["permits_units", "inventory", "permits_units", "mystery"] };
+    expect(parentMetricsNote(m)).toBe("From the parent metro: Housing units permitted, For sale inventory, mystery.");
   });
 });

@@ -5,9 +5,10 @@ import type { ColorScale } from "../lib/scale";
 interface Props {
   scale: ColorScale;
   metric: Metric;
+  caption: string;
 }
 
-export function Legend({ scale, metric }: Props) {
+export function Legend({ scale, metric, caption }: Props) {
   const signed = scale.kind === "diverging";
   return (
     <div className="legend" role="group" aria-label="map legend">
@@ -24,6 +25,7 @@ export function Legend({ scale, metric }: Props) {
         <span className="sw null" />
         <span>no data</span>
       </div>
+      <div className="caption">{caption}</div>
     </div>
   );
 }

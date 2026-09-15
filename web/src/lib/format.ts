@@ -15,10 +15,19 @@ export function formatValue(value: number | null, format: ValueFormat, signed = 
     case "ratio":
       return `${value.toFixed(1)}x`;
     case "int":
-      return Math.round(value).toLocaleString("en-US");
+      return `${sign}${Math.round(value).toLocaleString("en-US")}`;
     case "index":
       return value.toFixed(1);
     case "usd":
       return usd(value);
+    // bea reports personal income in thousands of dollars
+    case "usd_k":
+      return usd(value * 1000);
+    case "days":
+      return `${Math.round(value)} days`;
+    case "minutes":
+      return `${value.toFixed(1)} min`;
+    case "per_1000":
+      return `${sign}${value.toFixed(1)} per 1k`;
   }
 }

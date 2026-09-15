@@ -1,23 +1,10 @@
-import { geoNote } from "../lib/geo";
+import { geoNote, parentMetricsNote } from "../lib/geo";
 import { formatValue } from "../lib/format";
-import type { ValueFormat } from "../lib/metrics";
-import type { Growth, Metro, YearKey, YearValues } from "../types";
+import { DEFS, GROUPS, dateAt, type MetricDef } from "../lib/metrics";
+import type { Growth, Metro, YearKey } from "../types";
 import { Sparkline } from "./Sparkline";
 
 const YEARS: YearKey[] = ["2014", "2019", "2024"];
-
-const ROWS: { key: keyof YearValues; label: string; format: ValueFormat }[] = [
-  { key: "hpi", label: "House price index", format: "index" },
-  { key: "income", label: "Median household income", format: "usd" },
-  { key: "home_value", label: "Median home value", format: "usd" },
-  { key: "pop", label: "Population", format: "int" },
-  { key: "age", label: "Median age", format: "index" },
-  { key: "degree_share", label: "Bachelors or masters share", format: "pct" },
-  { key: "own_rate", label: "Homeownership rate", format: "pct" },
-  { key: "zhvi", label: "Zillow home value index", format: "usd" },
-  { key: "zori", label: "Zillow rent index", format: "usd" },
-  { key: "unemp", label: "Unemployment rate", format: "rate" },
-];
 
 const GROWTH: { key: keyof Growth; label: string }[] = [
   { key: "hpi_14_19", label: "HPI, 2014 to 2019" },
@@ -27,14 +14,28 @@ const GROWTH: { key: keyof Growth; label: string }[] = [
   { key: "pop_14_24", label: "Population, 2014 to 2024" },
 ];
 
+// the definitions in a group that are read by year and have a value in at
+// least one of this metro's panels, so an uncollected source adds no rows
+export function yearRows(metro: Metro, group: string): MetricDef[] {
+  return DEFS.filter(
+    (d) => d.group === group && d.periods.some((p) => p !== "latest") && YEARS.some((y) => d.valueAt(metro, y) !== null),
+  );
+}
+
+// definitions with a latest value for this metro
+export function latestRows(metro: Metro): MetricDef[] {
+  return DEFS.filter((d) => d.periods.includes("latest") && d.valueAt(metro, "latest") !== null);
+}
+
 interface Props {
   metro: Metro;
   onClose: () => void;
 }
 
 export function DetailPanel({ metro, onClose }: Props) {
-  const year = (y: YearKey, key: keyof YearValues) => metro.years?.[y]?.[key] ?? null;
-  const latest = metro.latest ?? { zhvi: null, zhvi_date: null, zori: null, zori_date: null, unemp: null, unemp_date: null };
+  const hpi = YEARS.map((y) => metro.years?.[y]?.hpi ?? null);
+  const latest = latestRows(metro);
+  const inherited = parentMetricsNote(metro);
 
   return (
     <aside className="detail" aria-label={`${metro.name} detail`}>
@@ -47,33 +48,35 @@ export function DetailPanel({ metro, onClose }: Props) {
       </header>
 
       <h3>House price index, all transactions</h3>
-      <Sparkline
-        values={YEARS.map((y) => year(y, "hpi"))}
-        labels={YEARS}
-        title={`house price index for ${metro.name}, 2014, 2019 and 2024`}
-      />
+      <Sparkline values={hpi} labels={YEARS} title={`house price index for ${metro.name}, 2014, 2019 and 2024`} />
 
-      <h3>By vintage year</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>measure</th>
-            {YEARS.map((y) => <th key={y}>{y}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {ROWS.map((row) => (
-            <tr key={row.key}>
-              <td>{row.label}</td>
-              {YEARS.map((y) => <td key={y}>{formatValue(year(y, row.key), row.format)}</td>)}
-            </tr>
-          ))}
-          <tr>
-            <td>Price to income ratio</td>
-            {YEARS.map((y) => <td key={y}>{formatValue(metro.ptir?.[y] ?? null, "ratio")}</td>)}
-          </tr>
-        </tbody>
-      </table>
+      {GROUPS.map((group) => {
+        const rows = yearRows(metro, group);
+        if (rows.length === 0) return null;
+        return (
+          <details key={group} open={group === "House prices"}>
+            <summary>{group}, by vintage year</summary>
+            <table>
+              <thead>
+                <tr>
+                  <th>measure</th>
+                  {YEARS.map((y) => <th key={y}>{y}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((d) => (
+                  <tr key={d.id}>
+                    <td>{d.label}</td>
+                    {YEARS.map((y) => (
+                      <td key={y}>{formatValue(d.valueAt(metro, y), d.format, d.kind === "diverging")}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </details>
+        );
+      })}
 
       <h3>Change</h3>
       <table>
@@ -87,26 +90,24 @@ export function DetailPanel({ metro, onClose }: Props) {
         </tbody>
       </table>
 
-      <h3>Latest</h3>
-      <table>
-        <tbody>
-          <tr>
-            <td>Zillow home value index</td>
-            <td>{formatValue(latest.zhvi, "usd")}</td>
-            <td>{latest.zhvi_date ?? "-"}</td>
-          </tr>
-          <tr>
-            <td>Zillow rent index</td>
-            <td>{formatValue(latest.zori, "usd")}</td>
-            <td>{latest.zori_date ?? "-"}</td>
-          </tr>
-          <tr>
-            <td>Unemployment rate</td>
-            <td>{formatValue(latest.unemp, "rate")}</td>
-            <td>{latest.unemp_date ?? "-"}</td>
-          </tr>
-        </tbody>
-      </table>
+      {latest.length > 0 && (
+        <>
+          <h3>Latest</h3>
+          <table>
+            <tbody>
+              {latest.map((d) => (
+                <tr key={d.id}>
+                  <td>{d.label}</td>
+                  <td>{formatValue(d.valueAt(metro, "latest"), d.format, d.kind === "diverging")}</td>
+                  <td>{dateAt(metro, "latest", d.id) ?? "-"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {inherited && <p className="geo-note">{inherited}</p>}
     </aside>
   );
 }

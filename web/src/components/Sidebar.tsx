@@ -1,22 +1,57 @@
 import { useMemo, useState } from "react";
 import { formatValue } from "../lib/format";
-import { METRICS, type Metric } from "../lib/metrics";
+import { GROUPS, PERIODS, SOURCE_LABEL, type Metric, type MetricDef } from "../lib/metrics";
 import { rankMetros, searchMetros } from "../lib/rank";
 import type { ColorScale } from "../lib/scale";
-import type { MapData, Metro } from "../types";
+import type { Metro, Period, Sources } from "../types";
+import type { MapMode } from "../lib/boundaries";
+import type { ShapesStatus } from "../App";
 
 interface Props {
   metros: Metro[];
+  defs: MetricDef[];
   metric: Metric;
+  period: Period | null;
+  available: Period[];
   scale: ColorScale;
   selectedCbsa: string | null;
-  sources: MapData["sources"];
+  sources: Sources;
   generatedAt: string;
   onMetricChange: (id: string) => void;
+  onPeriodChange: (period: Period) => void;
   onSelect: (cbsa: string) => void;
+  mode: MapMode;
+  shapesStatus: ShapesStatus;
+  onModeChange: (mode: MapMode) => void;
 }
 
-export function Sidebar({ metros, metric, scale, selectedCbsa, sources, generatedAt, onMetricChange, onSelect }: Props) {
+const SHAPES_NOTE: Partial<Record<ShapesStatus, string>> = {
+  loading: "loading shapes",
+  failed: "shapes unavailable, boundaries.json is missing. run npm run boundaries",
+};
+
+const PERIOD_LABEL: Record<Period, string> = { "2014": "2014", "2019": "2019", "2024": "2024", latest: "Latest" };
+
+// the attribution each source asks for, in the footer once per source present
+const CREDITS: [string, string][] = [
+  ["fhfa", "House prices: FHFA House Price Index."],
+  ["census", "Demographics: U.S. Census Bureau, ACS 5-year estimates."],
+  ["acs", "Rents, poverty, commute and labor force: U.S. Census Bureau, ACS 5-year estimates."],
+  ["pep", "Population and migration components: U.S. Census Bureau, Population Estimates Program."],
+  ["bps", "Permits: U.S. Census Bureau, Building Permits Survey."],
+  ["irs", "Tax return migration: IRS Statistics of Income."],
+  ["zillow", "Home values, rents, inventory and forecasts: Data provided by Zillow Research."],
+  ["realtor", "Listings: Realtor.com Economic Research."],
+  ["bls", "Unemployment: U.S. Bureau of Labor Statistics, LAUS."],
+  ["fred", "Mortgage rates: FRED, Federal Reserve Bank of St. Louis."],
+  ["bea", "Personal income: U.S. Bureau of Economic Analysis."],
+  ["hud", "Fair market rents and income limits: HUD User."],
+];
+
+export function Sidebar({
+  metros, defs, metric, period, available, scale, selectedCbsa, sources, generatedAt,
+  onMetricChange, onPeriodChange, onSelect, mode, shapesStatus, onModeChange,
+}: Props) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const [showAll, setShowAll] = useState(false);
@@ -24,6 +59,9 @@ export function Sidebar({ metros, metric, scale, selectedCbsa, sources, generate
   const results = useMemo(() => searchMetros(metros, query), [metros, query]);
   const ranked = useMemo(() => rankMetros(metros, metric, showAll ? undefined : 15), [metros, metric, showAll]);
   const signed = metric.kind === "diverging";
+  const noPeriod = metric.def.periods.length === 0;
+  const present = new Set(Object.keys(sources).concat(["fhfa", "census"]));
+  if (sources.zillow) present.add("zillow");
 
   const pick = (metro: Metro) => {
     onSelect(metro.cbsa);
@@ -50,12 +88,47 @@ export function Sidebar({ metros, metric, scale, selectedCbsa, sources, generate
   return (
     <aside className="sidebar">
       <div>
+        <span className="label" id="mode-label">draw metros as</span>
+        <div className="segmented" role="group" aria-labelledby="mode-label">
+          <button type="button" aria-pressed={mode === "dots"} onClick={() => onModeChange("dots")}>Dots</button>
+          <button type="button" aria-pressed={mode === "shapes"} onClick={() => onModeChange("shapes")}>Shapes</button>
+        </div>
+        {mode === "shapes" && SHAPES_NOTE[shapesStatus] && <p className="mode-note" role="status">{SHAPES_NOTE[shapesStatus]}</p>}
+      </div>
+
+      <div>
         <label htmlFor="metric">color metros by</label>
-        <select id="metric" value={metric.id} onChange={(e) => onMetricChange(e.target.value)}>
-          {METRICS.map((m) => (
-            <option key={m.id} value={m.id}>{m.label}</option>
-          ))}
+        <select id="metric" value={metric.def.id} onChange={(e) => onMetricChange(e.target.value)}>
+          {GROUPS.map((group) => {
+            const members = defs.filter((d) => d.group === group);
+            return members.length === 0 ? null : (
+              <optgroup key={group} label={group}>
+                {members.map((d) => (
+                  <option key={d.id} value={d.id}>{d.label}</option>
+                ))}
+              </optgroup>
+            );
+          })}
         </select>
+        <p className="metric-source">{SOURCE_LABEL[metric.source]}</p>
+      </div>
+
+      <div>
+        <span className="label" id="period-label">as of</span>
+        <div className="segmented" role="group" aria-labelledby="period-label">
+          {PERIODS.map((p) => (
+            <button
+              type="button"
+              key={p}
+              aria-pressed={p === period}
+              disabled={noPeriod || !available.includes(p)}
+              onClick={() => onPeriodChange(p)}
+            >
+              {PERIOD_LABEL[p]}
+            </button>
+          ))}
+        </div>
+        {noPeriod && <p className="mode-note">a change over time, no single period</p>}
       </div>
 
       <div>
@@ -129,12 +202,11 @@ export function Sidebar({ metros, metric, scale, selectedCbsa, sources, generate
 
       <footer className="footer">
         <p>
-          Vintages: Census Gazetteer {sources.gazetteer}; Zillow {sources.zillow ?? "not loaded"}; BLS {sources.bls ?? "not loaded"}; FRED {sources.fred ?? "not loaded"}. Built {generatedAt}.
+          Vintages: {Object.entries(sources).map(([name, version]) => `${name} ${version ?? "not loaded"}`).join("; ")}. Built {generatedAt}.
         </p>
         <p>
-          House prices: FHFA House Price Index. Demographics: U.S. Census Bureau, ACS 5-year estimates.
-          Home values and rents: Data provided by Zillow Research. Unemployment: U.S. Bureau of Labor Statistics, LAUS.
-          Mortgage rates: FRED, Federal Reserve Bank of St. Louis. Tiles: OpenStreetMap contributors.
+          {CREDITS.filter(([source]) => present.has(source)).map(([, line]) => line).join(" ")}
+          {" "}Tiles: OpenStreetMap contributors.
         </p>
       </footer>
     </aside>

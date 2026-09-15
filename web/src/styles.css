@@ -128,3 +128,24 @@ a { color: var(--ink-2); }
   font-size: 12px;
   color: #5b6470;
 }
+
+/* dots or shapes, a two button segmented control */
+.sidebar .label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.segmented { display: inline-flex; border: 1px solid var(--baseline); border-radius: 4px; overflow: hidden; }
+.segmented button {
+  padding: 5px 12px; border: 0; background: var(--surface); color: var(--ink-2); font-size: 12px; cursor: pointer;
+}
+.segmented button + button { border-left: 1px solid var(--baseline); }
+.segmented button[aria-pressed="true"] { background: var(--plane); color: var(--ink); font-weight: 600; }
+.segmented button:focus-visible { outline: 2px solid #2a78d6; outline-offset: -2px; }
+.mode-note { margin: 4px 0 0; font-size: 11px; color: var(--muted); }
+
+/* metric source under the select, the period control, legend caption */
+.metric-source { margin: 4px 0 0; font-size: 11px; color: var(--muted); }
+.segmented button:disabled { color: var(--baseline); cursor: default; }
+.legend .caption { color: var(--muted); font-size: 11px; margin-top: 4px; }
+
+/* collapsible groups in the detail panel */
+.detail details { margin-top: 10px; }
+.detail summary { font-size: 11px; color: var(--muted); font-weight: 500; cursor: pointer; margin: 0 0 4px; }
+.detail summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

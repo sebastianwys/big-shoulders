@@ -1,0 +1,56 @@
+[
+  {
+    "filename": "cb_2024_us_cbsa_500k.zip",
+    "file_format": "ZIP",
+    "source": {
+      "endpoint": "https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_cbsa_500k.zip",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "core based statistical areas, cartographic boundaries, 1:500,000"
+    },
+    "integrity": {
+      "sha256": "6b49c0d8caaab77aed9c7c786c4b2af19d1acd9333c76cd702fc117ff2165117",
+      "size_kb": 4585.6,
+      "row_count": 393
+    },
+    "version": "2024 cartographic boundary files, 1:500,000",
+    "downloaded_at": "2026-09-15T16:43:31Z",
+    "notes": "393 metropolitan areas kept, micropolitan areas dropped. the zip is not committed"
+  },
+  {
+    "filename": "cb_2024_us_metdiv_500k.zip",
+    "file_format": "ZIP",
+    "source": {
+      "endpoint": "https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_metdiv_500k.zip",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "metropolitan divisions, cartographic boundaries, 1:500,000"
+    },
+    "integrity": {
+      "sha256": "429e9dce2f0cb91237f9a55948c15bfd3a2aad8ae5d18fbdf4d15fcb13915251",
+      "size_kb": 321.5,
+      "row_count": 37
+    },
+    "version": "2024 cartographic boundary files, 1:500,000",
+    "downloaded_at": "2026-09-15T16:43:31Z",
+    "notes": "GEOID reduced to the five digit division code. the zip is not committed"
+  },
+  {
+    "filename": "boundaries.json",
+    "file_format": "JSON",
+    "source": {
+      "endpoint": "derived from the two files above by web/scripts/boundaries.mjs",
+      "provider": "this repository",
+      "access_method": "npm run boundaries",
+      "dataset": "topojson with objects cbsa and metdiv, GEOID and NAME only, 35% simplification with keep-shapes"
+    },
+    "integrity": {
+      "sha256": "b32f94fba575f8dcc8d3836eaace07d866aff0a169290382b89ec72ba995ba6e",
+      "size_kb": 676.6,
+      "row_count": 430
+    },
+    "version": "2024 cartographic boundary files, 1:500,000",
+    "downloaded_at": "2026-09-15T16:43:31Z",
+    "notes": "lives at web/public/data/boundaries.json and is committed"
+  }
+]

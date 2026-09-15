@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { METRICS } from "./metrics";
+import { DEFS, METRICS, availablePeriods, resolveMetric, visibleDefs } from "./metrics";
 import { rankMetros } from "./rank";
 import { buildScale } from "./scale";
 import type { MapData } from "../types";
@@ -20,17 +20,29 @@ describe.skipIf(!present)("built metros.json", () => {
     }
   });
 
-  it("builds a five class scale for every metric without nan", () => {
-    for (const metric of METRICS) {
-      const values = data!.metros.map(metric.accessor);
-      const scale = buildScale(values, metric.kind);
-      expect(scale.bins, metric.id).toHaveLength(5);
-      for (const bin of scale.bins) {
-        expect(Number.isFinite(bin.from) && Number.isFinite(bin.to), metric.id).toBe(true);
+  it("builds a five class scale at every available period of every visible metric", () => {
+    const visible = visibleDefs(data!.metros);
+    expect(visible.length).toBeGreaterThan(30);
+    for (const def of visible) {
+      const periods = def.periods.length ? availablePeriods(def, data!.metros) : [null];
+      expect(periods.length, def.id).toBeGreaterThan(0);
+      for (const period of periods) {
+        const metric = resolveMetric(def, period);
+        const values = data!.metros.map(metric.accessor);
+        const scale = buildScale(values, metric.kind);
+        expect(scale.bins, metric.id).toHaveLength(5);
+        for (const bin of scale.bins) {
+          expect(Number.isFinite(bin.from) && Number.isFinite(bin.to), metric.id).toBe(true);
+        }
+        const covered = values.filter((v) => v !== null).length;
+        expect(covered, `${metric.id} coverage`).toBeGreaterThan(data!.metros.length / 2);
       }
-      const covered = values.filter((v) => v !== null).length;
-      expect(covered, `${metric.id} coverage`).toBeGreaterThan(data!.metros.length / 2);
     }
+  });
+
+  it("hides only the sources that have not been collected", () => {
+    const hidden = DEFS.filter((d) => !visibleDefs(data!.metros).includes(d)).map((d) => d.source);
+    for (const source of hidden) expect(["bea", "hud"]).toContain(source);
   });
 
   it("ranks the core metric across most metros", () => {
