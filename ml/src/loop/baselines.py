@@ -1,7 +1,7 @@
 # classical baselines for the house price backtest. each model reads the
 # shared dataset, fits on the train block only and reports q10, q50, q90 for
 # every sample. calibrate() then widens the band on the cal block and
-# evaluate() scores every block. run with python -m the_loop.baselines
+# evaluate() scores every block. run with python -m loop.baselines
 
 import time
 
@@ -12,7 +12,7 @@ from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.linear_model import Ridge
 from sklearn.preprocessing import StandardScaler
 
-from the_loop import backtest, charts, spec
+from loop import backtest, charts, spec
 
 ALPHAS = np.logspace(-2, 6, 17)
 RIDGE_ALPHA = {}

@@ -7,5 +7,5 @@ models/*
 !models/.gitkeep
 .ipynb_checkpoints/
 
-# built from data/raw by the_loop.panel, regenerate rather than track
+# built from data/raw by loop.panel, regenerate rather than track
 data/

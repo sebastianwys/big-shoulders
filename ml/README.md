@@ -33,7 +33,7 @@ python3.12 -m venv .venv
 ## Layout
 
 ```
-src/the_loop/        package code
+src/loop/        package code
 tests/               unittest suite, run with run_tests.py
 notebooks/           exploration
 data/                the built panel and backtest predictions (gitignored)
@@ -48,7 +48,7 @@ The forecasting build asks a different question from the three above: given
 everything known about a metro at a quarter, how much will its house price
 index move over the next one, two, four and eight quarters, and how sure can
 the model be. It is built in steps, and every step leaves a figure in
-`results/figures/`. The code is in `src/the_loop/`: `spec.py` holds the
+`results/figures/`. The code is in `src/loop/`: `spec.py` holds the
 contract (horizons, quantiles, time blocks, the target, the error measures),
 `panel.py` builds the data, `backtest.py` and `baselines.py` run the
 classical rules, `nets.py` and `train.py` hold the PyTorch models, and
@@ -57,10 +57,10 @@ classical rules, `nets.py` and `train.py` hold the PyTorch models, and
 Run the whole chain from the repository root with the ml venv:
 
 ```bash
-ml/.venv/bin/python -m the_loop.panel
-ml/.venv/bin/python -m the_loop.baselines
-ml/.venv/bin/python -m the_loop.train
-ml/.venv/bin/python -m the_loop.export
+ml/.venv/bin/python -m loop.panel
+ml/.venv/bin/python -m loop.baselines
+ml/.venv/bin/python -m loop.train
+ml/.venv/bin/python -m loop.export
 ml/.venv/bin/python -m bot.build_map_data
 ```
 

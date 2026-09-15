@@ -13,7 +13,7 @@ import matplotlib.dates as mdates
 import numpy as np
 import pandas as pd
 
-from the_loop import charts, spec
+from loop import charts, spec
 
 # the map's zillow name matching lives in the bot package at the repo root
 sys.path.insert(0, str(spec.REPO_ROOT))

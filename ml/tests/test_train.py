@@ -7,7 +7,7 @@ from unittest import mock
 import numpy as np
 import pandas as pd
 
-from the_loop import charts, spec, train
+from loop import charts, spec, train
 
 
 def tiny_panel():

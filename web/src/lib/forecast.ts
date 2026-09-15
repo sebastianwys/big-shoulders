@@ -45,7 +45,7 @@ export function forecastLines(metro: Metro): ForecastLine[] {
   return lines;
 }
 
-// "Source: The Loop model, origin 2026-06". every forecast field carries the
+// "Source: Loop model, origin 2026-06". every forecast field carries the
 // origin quarter's last month, so the first date found is the one
 export function forecastCaption(metro: Metro): string {
   const source = `Source: ${SOURCE_LABEL.forecast}`;

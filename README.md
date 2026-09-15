@@ -1,4 +1,4 @@
-# The Loop
+# Loop
 
 Housing affordability trend analysis. I integrate the FHFA House Price Index with U.S. Census ACS demographic and economic indicators across U.S. metropolitan areas.
 
@@ -147,7 +147,7 @@ This is how the two datasets connect.
 This project uses a tabular data model. Raw and integrated datasets are CSV. JSON manifests track integrity and provenance. PNG files store visualizations. CSV is human-readable, version-controllable, and works directly with pandas. The dataset is small enough that no relational database is needed. Per-source folders keep raw files separated from derived files.
 
 ```
-the-loop/
+loop/
 |-- scripts/                     acquisition + integration scripts
 |-- data/
 |   |-- raw/
@@ -299,7 +299,7 @@ The fifth challenge was the missing big metros. FHFA publishes the 13 largest me
 Set up the environment first.
 
 ```bash
-cd the-loop
+cd loop
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt

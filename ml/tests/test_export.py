@@ -8,7 +8,7 @@ from unittest import mock
 
 import pandas as pd
 
-from the_loop import export, spec
+from loop import export, spec
 
 ORIGIN = "2026Q2"
 FORECAST_METROS = ["10180", "00420", "99999"]
@@ -172,7 +172,7 @@ class TestFiles(unittest.TestCase):
             self.assertEqual(list(entry), ["filename", "file_format", "source", "integrity", "version", "downloaded_at", "notes"])
             self.assertEqual(list(entry["source"]), ["endpoint", "provider", "access_method", "dataset"])
             self.assertEqual(list(entry["integrity"]), ["sha256", "size_kb", "row_count"])
-            self.assertEqual(entry["source"]["provider"], "The Loop forecasting model")
+            self.assertEqual(entry["source"]["provider"], "Loop forecasting model")
             self.assertEqual(entry["source"]["access_method"], "computed")
             self.assertEqual(entry["integrity"]["sha256"], hashlib.sha256(path.read_bytes()).hexdigest())
             self.assertEqual(entry["integrity"]["row_count"], len(metrics))

@@ -1,7 +1,7 @@
 # training and forecasting entry point. fits both networks on the fitting
 # set with early stopping, calibrates the band on the cal block, scores the
 # test block, then refits on everything realized for the shipped forecast.
-# run with: .venv/bin/python -m the_loop.train
+# run with: .venv/bin/python -m loop.train
 
 import copy
 import random
@@ -12,8 +12,8 @@ import pandas as pd
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
-from the_loop import backtest as shared
-from the_loop import charts, nets, spec
+from loop import backtest as shared
+from loop import charts, nets, spec
 
 # the validation set is the tail of the train block by outcome quarter
 VAL_START = "2015Q1"

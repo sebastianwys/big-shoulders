@@ -6,7 +6,7 @@ from unittest import mock
 import numpy as np
 from threadpoolctl import threadpool_limits
 
-from the_loop import backtest, baselines, charts, spec
+from loop import backtest, baselines, charts, spec
 
 try:
     from test_backtest import synthetic_panel

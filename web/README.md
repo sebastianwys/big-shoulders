@@ -1,4 +1,4 @@
-# The Loop map
+# Loop map
 
 A static map of the 373 metros in the study. Each marker is one metro, sized by
 2024 population and colored by the selected metric. Click a marker or a ranked
@@ -38,7 +38,7 @@ growth over the next four and eight quarters, the realized growth over the
 last four quarters and the last five years annualized, and the surprise,
 actual minus expected, for the four quarters just ended. The detail panel
 adds the 90 percent band to each expected growth line. The numbers come from
-`ml/results/forecast/metrics.csv`, written by `python -m the_loop.export`
+`ml/results/forecast/metrics.csv`, written by `python -m loop.export`
 from the model's forecasts and the panel, which the bot picks up beside the
 collected sources. A monthly bot run carries the last exported forecast
 until the model is rerun, so the caption date is the forecast origin, not

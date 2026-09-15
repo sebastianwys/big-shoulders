@@ -45,7 +45,7 @@ const CREDITS: [string, string][] = [
   ["fred", "Mortgage rates: FRED, Federal Reserve Bank of St. Louis."],
   ["bea", "Personal income: U.S. Bureau of Economic Analysis."],
   ["hud", "Fair market rents and income limits: HUD User."],
-  ["forecast", "Forecasts: The Loop model, fit on the sources above."],
+  ["forecast", "Forecasts: Loop model, fit on the sources above."],
 ];
 
 export function Sidebar({

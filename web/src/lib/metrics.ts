@@ -21,7 +21,7 @@ export const SOURCE_LABEL: Record<Source, string> = {
   realtor: "Realtor.com",
   bea: "BEA",
   hud: "HUD",
-  forecast: "The Loop model",
+  forecast: "Loop model",
 };
 
 // a metric definition. periods lists the panels it can be read at; an empty

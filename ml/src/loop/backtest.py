@@ -5,7 +5,7 @@
 import numpy as np
 import pandas as pd
 
-from the_loop import spec
+from loop import spec
 
 LAGS = 8
 LAG_COLUMNS = [f"lag{i}" for i in range(LAGS)]

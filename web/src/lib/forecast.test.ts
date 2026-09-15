@@ -43,8 +43,8 @@ describe("forecastLines", () => {
 
 describe("forecastCaption", () => {
   it("names the model and the origin month, the model alone without a date", () => {
-    expect(forecastCaption(abilene)).toBe("Source: The Loop model, origin 2026-06");
-    expect(forecastCaption(sparse)).toBe("Source: The Loop model");
-    expect(forecastCaption({} as Metro)).toBe("Source: The Loop model");
+    expect(forecastCaption(abilene)).toBe("Source: Loop model, origin 2026-06");
+    expect(forecastCaption(sparse)).toBe("Source: Loop model");
+    expect(forecastCaption({} as Metro)).toBe("Source: Loop model");
   });
 });

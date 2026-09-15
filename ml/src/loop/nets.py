@@ -9,7 +9,7 @@ from numpy.lib.stride_tricks import sliding_window_view
 from torch import nn
 from torch.nn import functional as F
 
-from the_loop import spec
+from loop import spec
 
 # quarterly features read as a sequence over the window, annual ones read once
 # at the origin. hpi_qoq comes first because it decides whether a window counts

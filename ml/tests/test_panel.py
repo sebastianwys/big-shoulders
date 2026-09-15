@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from the_loop import panel, spec
+from loop import panel, spec
 
 FHFA_ROW = {"level": "MSA", "frequency": "quarterly", "hpi_type": "traditional", "hpi_flavor": "all-transactions"}
 

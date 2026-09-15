@@ -5,7 +5,7 @@ from unittest import mock
 
 import numpy as np
 
-from the_loop import charts
+from loop import charts
 
 
 class TestCharts(unittest.TestCase):

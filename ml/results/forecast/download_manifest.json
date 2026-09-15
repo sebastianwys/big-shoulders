@@ -3,8 +3,8 @@
     "filename": "metrics.csv",
     "file_format": "CSV",
     "source": {
-      "endpoint": "the_loop.export",
-      "provider": "The Loop forecasting model",
+      "endpoint": "loop.export",
+      "provider": "Loop forecasting model",
       "access_method": "computed",
       "dataset": "house price index growth forecasts with 90 percent conformal bands, realized growth and forecast surprise by metro"
     },

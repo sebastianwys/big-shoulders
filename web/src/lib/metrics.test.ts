@@ -172,8 +172,8 @@ describe("forecasts", () => {
   });
 
   it("caption the model with the origin month", () => {
-    expect(metricCaption(resolveMetric(def("hpi_forecast_4q"), "latest"), SAMPLE.metros)).toBe("Source: The Loop model, latest 2026-06");
-    expect(metricCaption(resolveMetric(def("hpi_surprise_4q"), "latest"), [sparse])).toBe("Source: The Loop model, latest");
+    expect(metricCaption(resolveMetric(def("hpi_forecast_4q"), "latest"), SAMPLE.metros)).toBe("Source: Loop model, latest 2026-06");
+    expect(metricCaption(resolveMetric(def("hpi_surprise_4q"), "latest"), [sparse])).toBe("Source: Loop model, latest");
     expect(resolveMetric(def("hpi_forecast_4q"), "latest").dateOf(abilene)).toBe("2026-06");
   });
 });

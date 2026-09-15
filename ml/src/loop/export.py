@@ -10,13 +10,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from the_loop.spec import FORECAST_DIR, KEY, ML_ROOT, PANEL_PATH, TARGET_BASE, pct, quarter_end, shift_quarter
+from loop.spec import FORECAST_DIR, KEY, ML_ROOT, PANEL_PATH, TARGET_BASE, pct, quarter_end, shift_quarter
 
 DATA_DIR = ML_ROOT / "data"
 FORECASTS_PATH = FORECAST_DIR / "forecasts.csv"
 METRICS_PATH = FORECAST_DIR / "metrics.csv"
 MANIFEST_PATH = FORECAST_DIR / "download_manifest.json"
-PROVIDER = "The Loop forecasting model"
+PROVIDER = "Loop forecasting model"
 COLUMNS = ["cbsa_code", "metric", "period", "value"]
 
 # the map's metric names. a forecast metric is one percent column of
@@ -149,7 +149,7 @@ def manifest_entry(path, metrics, model, origin, inputs=()):
         "filename": path.name,
         "file_format": "CSV",
         "source": {
-            "endpoint": "the_loop.export",
+            "endpoint": "loop.export",
             "provider": PROVIDER,
             "access_method": "computed",
             "dataset": "house price index growth forecasts with 90 percent conformal bands, "
@@ -181,7 +181,7 @@ def write_manifest(entries, path=MANIFEST_PATH):
 
 
 # read the newest forecasts, the panel and the matching backtest predictions,
-# then write metrics.csv and its manifest. from ml: python -m the_loop.export
+# then write metrics.csv and its manifest. from ml: python -m loop.export
 def main():
     if not FORECASTS_PATH.exists():
         raise FileNotFoundError(f"{FORECASTS_PATH.name} is missing, run the forecast first")

@@ -6,7 +6,7 @@ from unittest import mock
 import numpy as np
 import pandas as pd
 
-from the_loop import backtest, spec
+from loop import backtest, spec
 
 
 def _ar1(rng, n, phi, scale):

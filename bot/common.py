@@ -13,7 +13,7 @@ INTEGRATED = BASE_DIR / "data" / "integrated" / "hpi_census_merged.csv"
 WEB_DATA_DIR = BASE_DIR / "web" / "public" / "data"
 
 # identify the bot to every source. polite, and it makes us easy to contact
-USER_AGENT = "the-loop-bot/0.1 (+https://github.com/sebastianwys/the-loop)"
+USER_AGENT = "loop-bot/0.1 (+https://github.com/sebastianwys/loop)"
 
 # the study years, same as the census vintages
 STUDY_YEARS = [2014, 2019, 2024]

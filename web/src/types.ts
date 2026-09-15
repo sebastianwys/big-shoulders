@@ -24,7 +24,7 @@ export type EnrichmentKey =
   | "bea_population"
   // hud, once a token is configured
   | "fmr_2br" | "median_family_income"
-  // the loop model, written by the_loop.export, percent at the origin quarter.
+  // loop model values, written by loop.export, percent at the origin quarter.
   // each expected growth carries its 90 percent band as _lo and _hi
   | "hpi_forecast_4q" | "hpi_forecast_4q_lo" | "hpi_forecast_4q_hi"
   | "hpi_forecast_8q" | "hpi_forecast_8q_lo" | "hpi_forecast_8q_hi"

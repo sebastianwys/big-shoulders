@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from the_loop import nets, spec
+from loop import nets, spec
 
 torch.manual_seed(spec.SEED)
 

@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from the_loop import spec
+from loop import spec
 
 
 def small_panel():

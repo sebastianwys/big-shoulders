@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "the-loop"
+name = "loop"
 version = "0.0.1"
 description = "modeling on the loop metro dataset"
 requires-python = ">=3.12"

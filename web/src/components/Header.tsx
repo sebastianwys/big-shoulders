@@ -13,7 +13,7 @@ export function Header({ rate, sample, count = 0 }: Props) {
   return (
     <header className="header">
       <h1>
-        The Loop
+        Loop
         <span className="sub">housing, income, jobs and migration across {where}</span>
       </h1>
       {rate && (
