@@ -21,6 +21,7 @@ export type EnrichmentKey =
   | "inventory" | "days_to_pending" | "price_cut_share" | "zhvf_forecast"
   // bea, once a key is configured
   | "bea_income_per_capita" | "bea_personal_income"
+  | "bea_population"
   // hud, once a token is configured
   | "fmr_2br" | "median_family_income";
 

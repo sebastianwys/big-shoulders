@@ -125,6 +125,7 @@ export const DEFS: MetricDef[] = [
   field("median_family_income", "Median family income", "usd", "sequential", "Rents and affordability", "hud", ALL),
   field("bea_income_per_capita", "Per capita personal income", "usd", "sequential", "Rents and affordability", "bea", ALL),
   field("bea_personal_income", "Total personal income", "usd_k", "sequential", "Rents and affordability", "bea", ALL),
+  field("bea_population", "Population (BEA)", "int", "sequential", "People and migration", "bea", ALL),
   // people and migration
   field("pop", "Population, ACS", "int", "sequential", "People and migration", "census", YEARS),
   field("pop_estimate", "Population estimate", "int", "sequential", "People and migration", "pep", ALL),
