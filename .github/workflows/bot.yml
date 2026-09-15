@@ -36,6 +36,12 @@ jobs:
       - name: run the tests
         run: python run_tests.py
 
+      # main may have moved during the hour the collectors take. rebase the new
+      # data onto it so the commit below lands as a fast forward instead of a
+      # rejected push that throws the run away
+      - name: catch up with main
+        run: git pull --rebase --autostash origin main
+
       # commits only if the previous steps passed, with the actions bot identity
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
