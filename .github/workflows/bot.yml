@@ -26,8 +26,11 @@ jobs:
 
       - name: run the collectors and rebuild the map data
         env:
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
           BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+          BEA_API_KEY: ${{ secrets.BEA_API_KEY }}
+          HUD_API_TOKEN: ${{ secrets.HUD_API_TOKEN }}
         run: python -m bot.run_bot
 
       - name: run the tests
@@ -37,4 +40,5 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "bot: monthly data refresh"
-          file_pattern: "data/raw/gazetteer data/raw/zillow/download_manifest.json data/raw/bls data/raw/fred web/public/data"
+          # .gitignore keeps the fetched-not-redistributed files out of this
+          file_pattern: "data/raw web/public/data"

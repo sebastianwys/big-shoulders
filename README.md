@@ -30,7 +30,7 @@ The reproducibility infrastructure has SHA-256 checksums for every download, str
 
 ### The Ethical and Legal Notes
 
-Both datasets are U.S. government works in the public domain. There is no personally identifiable information because both datasets aggregate to the metropolitan statistical area level, which is the smallest geographic unit. ACS responses are mandatory under Title 13 of the U.S. Code. FHFA HPI is computed from mortgage transaction data already aggregated by Fannie Mae, Freddie Mac, FHA, and VA loan portfolios. There are no copyright restrictions because U.S. government works are public domain under 17 USC 105. The MIT license in this repository covers source code only. The data is unrestricted.
+Both datasets are U.S. government works in the public domain. The bot's added sources are public domain government data except Zillow Research and Realtor.com Economic Research, which are used under their terms with attribution and whose raw files are not redistributed here. There is no personally identifiable information because both datasets aggregate to the metropolitan statistical area level, which is the smallest geographic unit. ACS responses are mandatory under Title 13 of the U.S. Code. FHFA HPI is computed from mortgage transaction data already aggregated by Fannie Mae, Freddie Mac, FHA, and VA loan portfolios. There are no copyright restrictions because U.S. government works are public domain under 17 USC 105. The MIT license in this repository covers source code only. The data is unrestricted.
 
 ### The FHFA House Price Index
 
@@ -153,10 +153,7 @@ big-shoulders/
 |   |-- raw/
 |   |   |-- fhfa/                pulled from FHFA + manifest
 |   |   |-- census/              pulled from Census API + manifest
-|   |   |-- gazetteer/           cbsa centroids + manifest (bot)
-|   |   |-- zillow/              zhvi and zori manifest (bot, csvs not committed)
-|   |   |-- bls/                 metro unemployment + manifest (bot)
-|   |   `-- fred/                mortgage rate + manifest (bot)
+|   |   `-- <source>/            one folder per bot source, manifest + metrics.csv
 |   `-- integrated/              merged output (final dataset)
 |-- results/
 |   `-- visualizations/          5 PNG charts
@@ -355,9 +352,9 @@ To verify integrity, compare your computed SHA-256 hashes against the committed 
 
 ## The Bot and the Map
 
-`bot/` collects four more sources on a monthly GitHub Actions schedule and rebuilds `web/public/data/metros.json`: Census Gazetteer centroids for the 410 metros and divisions, Zillow ZHVI and ZORI, BLS metro unemployment, and the FRED 30-year mortgage rate. Each lands in `data/raw/<source>/` with the same manifest as FHFA and Census. Run it by hand from the root with `python -m bot.run_bot`. It needs `FRED_API_KEY`, and `BLS_API_KEY` for the 2014 unemployment values; without the BLS key it pulls 2015 onward within the keyless quota.
+`bot/` collects the enrichment sources on a monthly GitHub Actions schedule and rebuilds `web/public/data/metros.json`. Each source is one collector in `bot/collectors/` that writes `data/raw/<source>/` with a manifest in the pipeline's shape and a `metrics.csv` the map builder discovers by convention. Sources: Census Gazetteer centroids (metropolitan division centroids derived from their counties), Zillow ZHVI and ZORI plus inventory, days to pending, price cuts and the ZHVF forecast, BLS metro unemployment, the FRED 30-year mortgage rate, six more ACS measures (gross rent, rent burden, vacancy, commute, poverty, labor force), Census population estimates with migration components, Census building permits, Realtor.com listing metrics, IRS county-to-county migration, and, with keys, BEA personal income and HUD fair market rents and income limits. Divisions inherit metro-level sources from their parent and say so. Run it by hand from the root with `python -m bot.run_bot`. Keys: `CENSUS_API_KEY` and `FRED_API_KEY` are required; `BLS_API_KEY`, `BEA_API_KEY` and `HUD_API_TOKEN` unlock the rest, and a source whose key is missing is skipped.
 
-`web/` is a React and Leaflet map of those metros, colored by a chosen metric, with a detail panel per metro. It is static, reads the committed JSON, and deploys to Cloudflare Pages from the `web` directory. Settings are in `web/README.md`.
+`web/` is a React and Leaflet map of the 410 metros and divisions: dots sized by population or Census boundary shapes, colored by any metric for 2014, 2019, 2024 or the latest reading, with a detail panel per metro. It is static, reads the committed JSON, and deploys to Cloudflare from the `web` directory. Settings are in `web/README.md`.
 
 ## The References
 
