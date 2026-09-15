@@ -1,3 +1,4 @@
+import { geoNote } from "../lib/geo";
 import { formatValue } from "../lib/format";
 import type { ValueFormat } from "../lib/metrics";
 import type { Growth, Metro, YearKey, YearValues } from "../types";
@@ -39,6 +40,7 @@ export function DetailPanel({ metro, onClose }: Props) {
     <aside className="detail" aria-label={`${metro.name} detail`}>
       <header>
         <h2>{metro.name}</h2>
+        {geoNote(metro) && <p className="geo-note">{geoNote(metro)}</p>}
         <button className="close" aria-label="close detail" onClick={onClose}>
           x
         </button>

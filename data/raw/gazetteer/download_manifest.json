@@ -6,14 +6,19 @@
       "endpoint": "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_Gaz_cbsa_national.zip",
       "provider": "U.S. Census Bureau",
       "access_method": "Direct HTTP download",
-      "dataset": "2024 Gazetteer, core based statistical areas, internal point coordinates"
+      "dataset": "2024 Gazetteer cbsa and county internal points, divisions derived from the omb july 2023 delineation"
     },
     "integrity": {
-      "sha256": "e43592788660c397ffb58946dc16646e6820f18aa4175e16324a8749e9e5846b",
-      "size_kb": 61.1,
-      "row_count": 935
+      "sha256": "8d21c07c2f8455135b7551026f4d063a5bbededcafbfbabc18eb048153b0eb07",
+      "size_kb": 65.2,
+      "row_count": 972
     },
     "version": "2024 Gazetteer",
-    "downloaded_at": "2026-09-14T23:31:23Z"
+    "downloaded_at": "2026-09-15T16:23:06Z",
+    "notes": {
+      "county_gazetteer": "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2024_Gazetteer/2024_Gaz_counties_national.zip",
+      "delineation": "https://www2.census.gov/programs-surveys/metro-micro/geographies/reference-files/2023/delineation-files/list1_2023.xlsx",
+      "divisions": 37
+    }
   }
 ]

@@ -13,10 +13,10 @@ Modeling on top of the pipeline in the repo root. The pipeline is complete for t
 | item | value |
 |---|---|
 | file | `../data/integrated/hpi_census_merged.csv` |
-| rows x cols | 1,101 x 19 |
-| metros | 373 |
+| rows x cols | 1,197 x 23 |
+| metros | 410, of which 37 are metropolitan divisions |
 | years | 2014, 2019, 2024 |
-| sha256 | `c3d1629e4de65f350c8b7fb2c0d82455fd57fbc012a16a3b33cac53b2f014889` |
+| sha256 | `f0fbb9184aef2e5ca4318b0ccd7aac3431e590701cb6bbc6dc256deac71822e7` |
 
 Read only. This folder never writes to `data/`. If the pipeline re-runs, its scripts rewrite the file and the hash in the loader is updated in the same commit.
 

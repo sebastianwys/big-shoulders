@@ -1,6 +1,10 @@
 {
   "generated_at": "2026-09-14T00:00:00Z",
-  "years": [2014, 2019, 2024],
+  "years": [
+    2014,
+    2019,
+    2024
+  ],
   "sources": {
     "gazetteer": "2024 Gazetteer",
     "zillow": "through 2026-07-31",
@@ -8,41 +12,218 @@
     "fred": "through 2026-09-10"
   },
   "national": {
-    "mortgage_rate": { "2014": 4.17, "2019": 3.94, "2024": 6.72, "latest": 6.76, "latest_date": "2026-09-10" }
+    "mortgage_rate": {
+      "2014": 4.17,
+      "2019": 3.94,
+      "2024": 6.72,
+      "latest": 6.76,
+      "latest_date": "2026-09-10"
+    }
   },
   "metros": [
     {
-      "cbsa": "10180", "name": "Abilene, TX", "lat": 32.452022, "lon": -99.718743,
+      "cbsa": "10180",
+      "name": "Abilene, TX",
+      "lat": 32.452022,
+      "lon": -99.718743,
       "years": {
-        "2014": { "hpi": 186.9, "income": 44249, "pop": 167171, "age": 34.1, "degree_share": 0.1227, "own_rate": 0.6331, "home_value": 91900, "zhvi": 110400, "zori": null, "unemp": 4.5 },
-        "2019": { "hpi": 225.8, "income": 52511, "pop": 170669, "age": 34.1, "degree_share": 0.1326, "own_rate": 0.6197, "home_value": 116100, "zhvi": 141200, "zori": 1050, "unemp": 3.2 },
-        "2024": { "hpi": 300.1, "income": 62010, "pop": 178204, "age": 34.5, "degree_share": 0.1402, "own_rate": 0.6204, "home_value": 165300, "zhvi": 209900, "zori": 1298, "unemp": 3.4 }
+        "2014": {
+          "hpi": 186.9,
+          "income": 44249,
+          "pop": 167171,
+          "age": 34.1,
+          "degree_share": 0.1227,
+          "own_rate": 0.6331,
+          "home_value": 91900,
+          "zhvi": 110400,
+          "zori": null,
+          "unemp": 4.5
+        },
+        "2019": {
+          "hpi": 225.8,
+          "income": 52511,
+          "pop": 170669,
+          "age": 34.1,
+          "degree_share": 0.1326,
+          "own_rate": 0.6197,
+          "home_value": 116100,
+          "zhvi": 141200,
+          "zori": 1050,
+          "unemp": 3.2
+        },
+        "2024": {
+          "hpi": 300.1,
+          "income": 62010,
+          "pop": 178204,
+          "age": 34.5,
+          "degree_share": 0.1402,
+          "own_rate": 0.6204,
+          "home_value": 165300,
+          "zhvi": 209900,
+          "zori": 1298,
+          "unemp": 3.4
+        }
       },
-      "latest": { "zhvi": 214800, "zhvi_date": "2026-07-31", "zori": 1321, "zori_date": "2026-07-31", "unemp": 3.6, "unemp_date": "2026-07" },
-      "growth": { "hpi_14_19": 0.2081, "hpi_19_24": 0.3291, "income_14_24": 0.4014, "pop_14_24": 0.066, "home_value_14_24": 0.7987 },
-      "ptir": { "2014": 2.08, "2019": 2.21, "2024": 2.67 }
+      "latest": {
+        "zhvi": 214800,
+        "zhvi_date": "2026-07-31",
+        "zori": 1321,
+        "zori_date": "2026-07-31",
+        "unemp": 3.6,
+        "unemp_date": "2026-07"
+      },
+      "growth": {
+        "hpi_14_19": 0.2081,
+        "hpi_19_24": 0.3291,
+        "income_14_24": 0.4014,
+        "pop_14_24": 0.066,
+        "home_value_14_24": 0.7987
+      },
+      "ptir": {
+        "2014": 2.08,
+        "2019": 2.21,
+        "2024": 2.67
+      },
+      "level": "msa",
+      "parent": null,
+      "zillow_scope": "metro"
     },
     {
-      "cbsa": "19100", "name": "Dallas-Fort Worth-Arlington, TX", "lat": 32.8, "lon": -97.0,
+      "cbsa": "19100",
+      "name": "Dallas-Fort Worth-Arlington, TX",
+      "lat": 32.8,
+      "lon": -97,
       "years": {
-        "2014": { "hpi": 201.4, "income": 59000, "pop": 6810000, "age": 34.0, "degree_share": 0.21, "own_rate": 0.59, "home_value": 161000, "zhvi": 172000, "zori": null, "unemp": 5.1 },
-        "2019": { "hpi": 281.9, "income": 72000, "pop": 7500000, "age": 34.8, "degree_share": 0.23, "own_rate": 0.60, "home_value": 231000, "zhvi": 252000, "zori": 1450, "unemp": 3.4 },
-        "2024": { "hpi": 392.6, "income": 85000, "pop": 8100000, "age": 35.4, "degree_share": 0.25, "own_rate": 0.60, "home_value": 331000, "zhvi": 372000, "zori": 1880, "unemp": 3.9 }
+        "2014": {
+          "hpi": 201.4,
+          "income": 59000,
+          "pop": 6810000,
+          "age": 34,
+          "degree_share": 0.21,
+          "own_rate": 0.59,
+          "home_value": 161000,
+          "zhvi": 172000,
+          "zori": null,
+          "unemp": 5.1
+        },
+        "2019": {
+          "hpi": 281.9,
+          "income": 72000,
+          "pop": 7500000,
+          "age": 34.8,
+          "degree_share": 0.23,
+          "own_rate": 0.6,
+          "home_value": 231000,
+          "zhvi": 252000,
+          "zori": 1450,
+          "unemp": 3.4
+        },
+        "2024": {
+          "hpi": 392.6,
+          "income": 85000,
+          "pop": 8100000,
+          "age": 35.4,
+          "degree_share": 0.25,
+          "own_rate": 0.6,
+          "home_value": 331000,
+          "zhvi": 372000,
+          "zori": 1880,
+          "unemp": 3.9
+        }
       },
-      "latest": { "zhvi": 368500, "zhvi_date": "2026-07-31", "zori": 1902, "zori_date": "2026-07-31", "unemp": 4.1, "unemp_date": "2026-07" },
-      "growth": { "hpi_14_19": 0.3997, "hpi_19_24": 0.3927, "income_14_24": 0.4407, "pop_14_24": 0.1894, "home_value_14_24": 1.0559 },
-      "ptir": { "2014": 2.73, "2019": 3.21, "2024": 3.89 }
+      "latest": {
+        "zhvi": 368500,
+        "zhvi_date": "2026-07-31",
+        "zori": 1902,
+        "zori_date": "2026-07-31",
+        "unemp": 4.1,
+        "unemp_date": "2026-07"
+      },
+      "growth": {
+        "hpi_14_19": 0.3997,
+        "hpi_19_24": 0.3927,
+        "income_14_24": 0.4407,
+        "pop_14_24": 0.1894,
+        "home_value_14_24": 1.0559
+      },
+      "ptir": {
+        "2014": 2.73,
+        "2019": 3.21,
+        "2024": 3.89
+      },
+      "level": "msa",
+      "parent": null,
+      "zillow_scope": "metro"
     },
     {
-      "cbsa": "25980", "name": "Hinesville, GA", "lat": 31.85, "lon": -81.6,
+      "cbsa": "25980",
+      "name": "Hinesville, GA division",
+      "lat": 31.85,
+      "lon": -81.6,
       "years": {
-        "2014": { "hpi": 150.2, "income": null, "pop": 79000, "age": 27.5, "degree_share": null, "own_rate": null, "home_value": 128000, "zhvi": null, "zori": null, "unemp": null },
-        "2019": { "hpi": 165.0, "income": 48000, "pop": 81000, "age": 28.1, "degree_share": 0.09, "own_rate": 0.42, "home_value": 140000, "zhvi": null, "zori": null, "unemp": null },
-        "2024": { "hpi": null, "income": 55000, "pop": 84000, "age": 28.9, "degree_share": 0.1, "own_rate": 0.43, "home_value": null, "zhvi": null, "zori": null, "unemp": null }
+        "2014": {
+          "hpi": 150.2,
+          "income": null,
+          "pop": 79000,
+          "age": 27.5,
+          "degree_share": null,
+          "own_rate": null,
+          "home_value": 128000,
+          "zhvi": null,
+          "zori": null,
+          "unemp": null
+        },
+        "2019": {
+          "hpi": 165,
+          "income": 48000,
+          "pop": 81000,
+          "age": 28.1,
+          "degree_share": 0.09,
+          "own_rate": 0.42,
+          "home_value": 140000,
+          "zhvi": null,
+          "zori": null,
+          "unemp": null
+        },
+        "2024": {
+          "hpi": null,
+          "income": 55000,
+          "pop": 84000,
+          "age": 28.9,
+          "degree_share": 0.1,
+          "own_rate": 0.43,
+          "home_value": null,
+          "zhvi": null,
+          "zori": null,
+          "unemp": null
+        }
       },
-      "latest": { "zhvi": null, "zhvi_date": null, "zori": null, "zori_date": null, "unemp": null, "unemp_date": null },
-      "growth": { "hpi_14_19": 0.0985, "hpi_19_24": null, "income_14_24": null, "pop_14_24": 0.0633, "home_value_14_24": null },
-      "ptir": { "2014": null, "2019": 2.92, "2024": null }
+      "latest": {
+        "zhvi": null,
+        "zhvi_date": null,
+        "zori": null,
+        "zori_date": null,
+        "unemp": null,
+        "unemp_date": null
+      },
+      "growth": {
+        "hpi_14_19": 0.0985,
+        "hpi_19_24": null,
+        "income_14_24": null,
+        "pop_14_24": 0.0633,
+        "home_value_14_24": null
+      },
+      "ptir": {
+        "2014": null,
+        "2019": 2.92,
+        "2024": null
+      },
+      "level": "division",
+      "parent": {
+        "cbsa": "10180",
+        "name": "Abilene, TX"
+      },
+      "zillow_scope": "parent metro"
     }
   ]
 }

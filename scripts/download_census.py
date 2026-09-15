@@ -28,6 +28,26 @@ MIN_VINTAGE = 2012
 SPAN = 5
 N_BATCHES = 3
 
+MSA_COL = "metropolitan statistical area/micropolitan statistical area"
+DIV_COL = "metropolitan division"
+
+# the msas that omb splits into metropolitan divisions, july 2023 delineation.
+# fhfa publishes these thirteen only as divisions, so the divisions are pulled
+# too and join on their own codes. the api needs one call per parent
+DIVISION_PARENTS = [
+    "12060", "14460", "16980", "19100", "19820", "31080", "33100",
+    "35620", "37980", "41860", "42660", "45300", "47900",
+]
+
+# division codes that changed between delineations with the same counties
+# underneath, mapped to the current code so the older vintages join
+DIVISION_CROSSWALK = {
+    "16974": "16984",  # chicago-naperville-arlington heights -> chicago-naperville-schaumburg
+    "23844": "29414",  # gary, in -> lake county-porter county-jasper county, in
+    "43524": "23224",  # silver spring-frederick-rockville -> frederick-gaithersburg-bethesda
+    "35154": "29484",  # new brunswick-lakewood -> lakewood-new brunswick
+}
+
 # add codes here to pull more columns
 # B19013_001E = median household income
 # B01003_001E = total population
@@ -150,18 +170,48 @@ def resolve_years(refresh=False):
     return years
 
 
-# pull one year from the api. everything comes back as strings
+# tag rows with the code the merge joins on. msas join on their own code,
+# divisions on the division code, crosswalked when a delineation renamed it.
+# the api columns stay as they came
+def tag_geography(df, level):
+    df = df.copy()
+    df["geo_level"] = level
+    if level == "division":
+        df["geo_code"] = df[DIV_COL].map(lambda code: DIVISION_CROSSWALK.get(code, code))
+        df["parent_cbsa"] = df[MSA_COL]
+    else:
+        df["geo_code"] = df[MSA_COL]
+        df["parent_cbsa"] = ""
+    return df
+
+
+# pull one vintage: every msa and micro, plus the divisions of the split msas
 def fetch_acs_data(year, api_key):
     print(f"Fetching ACS 5-year data for {year}...")
+    frames = [tag_geography(query_acs(year, api_key, f"{MSA_COL}:*"), "msa")]
+    for parent in DIVISION_PARENTS:
+        divisions = query_acs(year, api_key, f"{DIV_COL}:*", within=f"{MSA_COL}:{parent}")
+        frames.append(tag_geography(divisions, "division"))
 
+    df = pd.concat(frames, ignore_index=True)
+    df["year"] = year  # tag rows so we know the vintage after concat
+    order = VARIABLES + [MSA_COL, DIV_COL, "geo_level", "geo_code", "parent_cbsa", "year"]
+    print(f"  {(df.geo_level == 'msa').sum()} msas and micros, {(df.geo_level == 'division').sum()} divisions")
+    return df[order]
+
+
+# one api call. everything comes back as strings
+def query_acs(year, api_key, geography, within=None):
     url = BASE_URL.format(year=year)
-    params = {
-        "get": ",".join(VARIABLES),
-        "for": "metropolitan statistical area/micropolitan statistical area:*",  # * = all msas
-        "key": api_key,
-    }
+    params = {"get": ",".join(VARIABLES), "for": geography, "key": api_key}
+    if within:
+        params["in"] = within
 
     response = requests.get(url, params=params, timeout=60)
+
+    # a parent with no divisions in that vintage answers 204 with an empty body
+    if response.status_code == 204 or not response.content.strip():
+        return pd.DataFrame(columns=VARIABLES + [MSA_COL, DIV_COL])
 
     try:
         response.raise_for_status()
@@ -181,10 +231,7 @@ def fetch_acs_data(year, api_key):
     headers = data[0]  # row 0 is column names
     rows = data[1:]
 
-    df = pd.DataFrame(rows, columns=headers)
-    df["year"] = year  # tag rows so we know the vintage after concat
-
-    return df
+    return pd.DataFrame(rows, columns=headers)
 
 
 # remove stale years, pull fresh data, write combined csv and manifest
@@ -204,6 +251,7 @@ def main():
 
     manifest = []
     all_frames = []
+    failed = []
 
     # pull oldest first so the combined csv and the manifest stay in ascending
     # year order. acs_batches returns newest first
@@ -230,7 +278,7 @@ def main():
                     "provider": "U.S. Census Bureau",
                     "access_method": "REST API",
                     "dataset": "ACS 5-year estimates",
-                    "geography": "metropolitan statistical area/micropolitan statistical area:*",
+                    "geography": f"{MSA_COL}:* plus {DIV_COL}:* within {len(DIVISION_PARENTS)} split msas",
                     "variables": VARIABLES
                 },
                 "integrity": {
@@ -244,6 +292,7 @@ def main():
             })
 
         except Exception as e:
+            failed.append(year)
             # type(e).__name__ tells you what kind of failure
             print(f"  ERROR {year}: {type(e).__name__}: {redact(str(e), api_key)}")
             print(f"  Endpoint: {BASE_URL.format(year=year)}")
@@ -261,6 +310,9 @@ def main():
         json.dump(manifest, f, indent=2)
 
     print(f"Manifest saved to {manifest_path}")
+    if failed:
+        # the combined file is partial. fail loudly so no downstream step trusts it
+        sys.exit(f"Census ACS download incomplete, vintages failed: {failed}")
     print("Census ACS download complete.")
 
 

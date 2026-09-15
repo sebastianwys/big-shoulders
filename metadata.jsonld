@@ -6,9 +6,9 @@
   "description": "An integrated dataset combining FHFA House Price Index annual averages with U.S. Census ACS 5-year demographic and economic estimates, joined on metropolitan statistical area code and year. Covers 373 metros across three non-overlapping vintages: 2014 (post-recession baseline, surveys 2010-2014), 2019 (pre-COVID peak, surveys 2015-2019), and 2024 (post-COVID reality, surveys 2020-2024).",
   "url": "data/integrated/hpi_census_merged.csv",
   "identifier": "is477-sp26-big-shoulders",
-  "version": "1.1",
+  "version": "1.2",
   "datePublished": "2026-05-07",
-  "dateModified": "2026-09-14",
+  "dateModified": "2026-09-15",
   "creator": {
     "@type": "Person",
     "name": "Sebastian Wysocki",

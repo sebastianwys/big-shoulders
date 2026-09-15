@@ -30,9 +30,19 @@ export interface Growth {
   home_value_14_24: number | null;
 }
 
+export interface ParentMetro {
+  cbsa: string;
+  name: string;
+}
+
 export interface Metro {
   cbsa: string;
   name: string;
+  // metropolitan divisions are the pieces fhfa publishes for the largest metros
+  level?: "msa" | "division";
+  parent?: ParentMetro | null;
+  // zillow publishes metros only, so a division carries its parent's values
+  zillow_scope?: "metro" | "parent metro" | null;
   lat: number;
   lon: number;
   years: Record<YearKey, YearValues>;

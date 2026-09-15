@@ -52,7 +52,12 @@ def main():
 
     # --- load census ---
     print("Loading Census ACS data...")
-    census = pd.read_csv(DATA_DIR / "raw" / "census" / "acs_5yr_combined.csv")
+    # codes stay strings. parent_cbsa is blank for metros, so without this
+    # pandas infers float and writes 16980.0, which never matches anything
+    code_cols = ["metropolitan statistical area/micropolitan statistical area",
+                 "metropolitan division", "geo_code", "parent_cbsa"]
+    census = pd.read_csv(DATA_DIR / "raw" / "census" / "acs_5yr_combined.csv",
+                         dtype={col: str for col in code_cols})
 
     # rename api codes to readable names
     census = census.rename(columns={
@@ -66,6 +71,10 @@ def main():
         "B25003_002E": "owner_occupied_units",
         "B25077_001E": "median_home_value",
     })
+
+    # divisions join on their own code. files without geo_code keep the msa column
+    if "geo_code" in census.columns:
+        census["cbsa_code"] = census["geo_code"]
 
     print(f"  Total rows: {len(census)}")
     print(f"  Years: {sorted(int(y) for y in census['year'].unique())}")

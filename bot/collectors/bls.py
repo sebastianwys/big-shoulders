@@ -38,8 +38,10 @@ def primary_state(name):
     return name.split(",")[1].strip().split()[0].split("-")[0]
 
 
-def series_id(cbsa_code, state_abbr):
-    return f"LAUMT{STATE_FIPS[state_abbr]}{cbsa_code}000000{MEASURE}"
+# area type MT for a metropolitan statistical area, DV for a metropolitan division
+def series_id(cbsa_code, state_abbr, division=False):
+    area_type = "DV" if division else "MT"
+    return f"LAU{area_type}{STATE_FIPS[state_abbr]}{cbsa_code}000000{MEASURE}"
 
 
 # keep the annual averages plus the newest monthly value per series
@@ -74,13 +76,14 @@ def collect():
         print(f"[bls] no BLS_API_KEY, pulling {start_year} onward only")
 
     metros = pd.read_csv(INTEGRATED, dtype={"cbsa_code": str})["cbsa_code"].unique()
-    names = pd.read_csv(CENTROIDS, dtype={"cbsa_code": str}).set_index("cbsa_code")["name"]
+    geo = pd.read_csv(CENTROIDS, dtype={"cbsa_code": str}).drop_duplicates("cbsa_code").set_index("cbsa_code")
 
     ids = {}
     for code in metros:
-        if code in names.index:
-            state = STATE_OVERRIDES.get(code) or primary_state(names[code])
-            ids[series_id(code, state)] = code
+        if code in geo.index:
+            state = STATE_OVERRIDES.get(code) or primary_state(geo.loc[code, "name"])
+            division = int(geo.loc[code, "cbsa_type"]) == 3
+            ids[series_id(code, state, division)] = code
 
     frames, missing = [], []
     id_list = list(ids)

@@ -218,7 +218,7 @@ class TestEdgeCases(BuildCase):
         names = [m["name"] for m in payload["metros"]]
         self.assertEqual(names, sorted(names))
         metro = payload["metros"][0]
-        self.assertEqual(list(metro), ["cbsa", "name", "lat", "lon", "years", "latest", "growth", "ptir"])
+        self.assertEqual(list(metro), ["cbsa", "name", "level", "parent", "zillow_scope", "lat", "lon", "years", "latest", "growth", "ptir"])
         self.assertEqual(list(metro["years"]), ["2014", "2019", "2024"])
         self.assertEqual(list(metro["years"]["2014"]), ["hpi", "income", "pop", "age", "degree_share",
                                                         "own_rate", "home_value", "zhvi", "zori", "unemp"])
@@ -281,3 +281,63 @@ class TestHelpers(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestDivisions(unittest.TestCase):
+    def frames(self):
+        merged = pd.DataFrame({
+            "cbsa_code": ["16984", "16984", "10180"],
+            "place_name": ["Chicago-Naperville-Schaumburg, IL (MSAD)"] * 2 + ["Abilene, TX"],
+            "year": [2019, 2024, 2024],
+            "avg_index_nsa": [200.0, 260.0, 335.5],
+            "median_income": [80000, 90000, 50000],
+            "total_pop": [7000000, 7100000, 170000],
+            "median_home_value": [300000, 340000, 130000],
+            "geo_level": ["division", "division", "msa"],
+            "parent_cbsa": ["16980", "16980", None],
+        })
+        centroids = pd.DataFrame({
+            "cbsa_code": ["16980", "16984", "10180"],
+            "name": ["Chicago-Naperville-Elgin, IL-IN Metro Area", "Chicago-Naperville-Schaumburg, IL Metro Division", "Abilene, TX Metro Area"],
+            "lat": [41.8, 41.85, 32.45], "lon": [-87.9, -87.95, -99.7],
+        }).set_index("cbsa_code")
+        zhvi = pd.DataFrame({"2024-06-30": [400000.0, 210000.0]}, index=pd.Index(["Chicago, IL", "Abilene, TX"], name="RegionName"))
+        return merged, centroids, zhvi
+
+    def test_division_carries_level_parent_and_clean_name(self):
+        merged, centroids, zhvi = self.frames()
+        metros, _, _ = bm.build_metros(merged, centroids, zhvi=zhvi)
+        chi = next(m for m in metros if m["cbsa"] == "16984")
+        self.assertEqual(chi["name"], "Chicago-Naperville-Schaumburg, IL")
+        self.assertEqual(chi["level"], "division")
+        self.assertEqual(chi["parent"], {"cbsa": "16980", "name": "Chicago-Naperville-Elgin, IL-IN"})
+
+    # zillow has no divisions, so the parent metro's value is used and labeled
+    def test_division_takes_zillow_from_parent(self):
+        merged, centroids, zhvi = self.frames()
+        metros, _, unmatched = bm.build_metros(merged, centroids, zhvi=zhvi)
+        chi = next(m for m in metros if m["cbsa"] == "16984")
+        self.assertEqual(chi["latest"]["zhvi"], 400000.0)
+        self.assertEqual(chi["zillow_scope"], "parent metro")
+        self.assertEqual(unmatched, 0)
+
+    def test_msa_is_unchanged(self):
+        merged, centroids, zhvi = self.frames()
+        metros, _, _ = bm.build_metros(merged, centroids, zhvi=zhvi)
+        abi = next(m for m in metros if m["cbsa"] == "10180")
+        self.assertEqual((abi["level"], abi["parent"], abi["zillow_scope"]), ("msa", None, "metro"))
+
+    # a division whose parent is unknown must not fall through to a metro with
+    # the same name, so it gets no zillow values at all
+    def test_division_without_parent_gets_no_zillow(self):
+        merged, centroids, zhvi = self.frames()
+        merged.loc[merged.cbsa_code == "16984", "parent_cbsa"] = "00000"
+        metros, _, _ = bm.build_metros(merged, centroids, zhvi=zhvi)
+        chi = next(m for m in metros if m["cbsa"] == "16984")
+        self.assertIsNone(chi["parent"])
+        self.assertIsNone(chi["latest"]["zhvi"])
+        self.assertIsNone(chi["zillow_scope"])
+
+    def test_display_name_strips_only_the_suffix(self):
+        self.assertEqual(bm.display_name("Boston, MA (MSAD)"), "Boston, MA")
+        self.assertEqual(bm.display_name("Abilene, TX"), "Abilene, TX")

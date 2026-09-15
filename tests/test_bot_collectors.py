@@ -206,3 +206,66 @@ class TestZillowNewestMonth(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestGazetteerDivisions(unittest.TestCase):
+    COUNTY_TEXT = (
+        "USPS\tGEOID\tANSICODE\tNAME\tALAND\tAWATER\tALAND_SQMI\tAWATER_SQMI\tINTPTLAT\tINTPTLONG    \n"
+        "IL\t17031\t1\tCook County\t1\t1\t945.0\t1.0\t41.84\t-87.82    \n"
+        "IL\t17043\t1\tDuPage County\t1\t1\t327.0\t1.0\t41.85\t-88.09    \n"
+        "IL\t17037\t1\tDeKalb County\t1\t1\t631.0\t1.0\t41.89\t-88.77    \n"
+    )
+
+    def delineation(self):
+        import pandas as pd
+        return pd.DataFrame({
+            "cbsa_code": ["16984", "16984", "20994", "20994"],
+            "name": ["Chicago-Naperville-Schaumburg, IL Metro Division"] * 2 + ["Elgin, IL Metro Division"] * 2,
+            "parent_cbsa": ["16980"] * 4,
+            "county_fips": ["17031", "17043", "17037", "17999"],  # 17999 has no gazetteer row
+        })
+
+    def test_parse_counties_types_and_columns(self):
+        df = gazetteer.parse_counties(self.COUNTY_TEXT)
+        self.assertEqual(list(df.columns), ["county_fips", "land_sqmi", "lat", "lon"])
+        self.assertEqual(df.county_fips.tolist(), ["17031", "17043", "17037"])
+        self.assertAlmostEqual(df.lon.iloc[0], -87.82)
+
+    # land weighted, so cook county pulls the point toward itself
+    def test_division_centroid_is_land_weighted(self):
+        counties = gazetteer.parse_counties(self.COUNTY_TEXT)
+        out = gazetteer.division_centroids(self.delineation(), counties)
+        chi = out[out.cbsa_code == "16984"].iloc[0]
+        expected_lat = (41.84 * 945 + 41.85 * 327) / (945 + 327)
+        self.assertAlmostEqual(chi.lat, expected_lat, places=5)
+        self.assertEqual(int(chi.cbsa_type), gazetteer.DIVISION)
+        self.assertEqual(chi.parent_cbsa, "16980")
+        self.assertAlmostEqual(chi.land_sqmi, 1272.0)
+
+    # a county missing from the gazetteer is skipped, not zeroed
+    def test_missing_county_is_skipped(self):
+        counties = gazetteer.parse_counties(self.COUNTY_TEXT)
+        out = gazetteer.division_centroids(self.delineation(), counties)
+        elgin = out[out.cbsa_code == "20994"].iloc[0]
+        self.assertAlmostEqual(elgin.lat, 41.89)
+        self.assertEqual(list(out.columns), gazetteer.COLUMNS)
+
+    def test_division_with_no_counties_left_is_dropped(self):
+        import pandas as pd
+        counties = gazetteer.parse_counties(self.COUNTY_TEXT)
+        lone = pd.DataFrame({"cbsa_code": ["99999"], "name": ["Nowhere Metro Division"],
+                             "parent_cbsa": ["11111"], "county_fips": ["00000"]})
+        out = gazetteer.division_centroids(lone, counties)
+        self.assertEqual(len(out), 0)
+
+
+class TestBlsDivisions(unittest.TestCase):
+    # verified live: the chicago division answers under area type DV
+    def test_division_series_uses_dv(self):
+        self.assertEqual(bls.series_id("16984", "IL", division=True), "LAUDV171698400000003")
+        self.assertEqual(bls.series_id("16984", "IL"), "LAUMT171698400000003")
+
+    def test_division_series_parses_to_its_own_code(self):
+        df = bls.parse_series([{"seriesID": "LAUDV171698400000003", "data": [
+            {"year": "2024", "period": "M13", "value": "5.1"}]}])
+        self.assertEqual(df.cbsa_code.tolist(), ["16984"])

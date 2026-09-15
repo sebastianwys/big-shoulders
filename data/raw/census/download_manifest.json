@@ -7,7 +7,7 @@
       "provider": "U.S. Census Bureau",
       "access_method": "REST API",
       "dataset": "ACS 5-year estimates",
-      "geography": "metropolitan statistical area/micropolitan statistical area:*",
+      "geography": "metropolitan statistical area/micropolitan statistical area:* plus metropolitan division:* within 13 split msas",
       "variables": [
         "NAME",
         "B19013_001E",
@@ -21,16 +21,16 @@
       ]
     },
     "integrity": {
-      "sha256": "484c8b2a0388440af3171d87a9669f7e5ce3863abcbafcc734aaacbb8d1b5f6c",
-      "size_kb": 79.2,
-      "row_count": 929
+      "sha256": "f9277079c31d2422a1c12a5d86270680c939278e5c09a53f97951e8292963124",
+      "size_kb": 95.8,
+      "row_count": 960
     },
     "version": "ACS 5-year 2014",
     "survey_window": [
       2010,
       2014
     ],
-    "downloaded_at": "2026-09-14T22:43:43Z"
+    "downloaded_at": "2026-09-15T16:19:39Z"
   },
   {
     "filename": "acs_5yr_2019.csv",
@@ -40,7 +40,7 @@
       "provider": "U.S. Census Bureau",
       "access_method": "REST API",
       "dataset": "ACS 5-year estimates",
-      "geography": "metropolitan statistical area/micropolitan statistical area:*",
+      "geography": "metropolitan statistical area/micropolitan statistical area:* plus metropolitan division:* within 13 split msas",
       "variables": [
         "NAME",
         "B19013_001E",
@@ -54,16 +54,16 @@
       ]
     },
     "integrity": {
-      "sha256": "c0310157634ee2e38dac19a564e645b0d5e546c88f5060ba92b5b05f73e098c8",
-      "size_kb": 80.1,
-      "row_count": 938
+      "sha256": "9c5467cf1e5c5e785f53d955b6dc0cef19e58aa21ad1168da382be8c42b5265f",
+      "size_kb": 96.8,
+      "row_count": 969
     },
     "version": "ACS 5-year 2019",
     "survey_window": [
       2015,
       2019
     ],
-    "downloaded_at": "2026-09-14T22:43:44Z"
+    "downloaded_at": "2026-09-15T16:19:50Z"
   },
   {
     "filename": "acs_5yr_2024.csv",
@@ -73,7 +73,7 @@
       "provider": "U.S. Census Bureau",
       "access_method": "REST API",
       "dataset": "ACS 5-year estimates",
-      "geography": "metropolitan statistical area/micropolitan statistical area:*",
+      "geography": "metropolitan statistical area/micropolitan statistical area:* plus metropolitan division:* within 13 split msas",
       "variables": [
         "NAME",
         "B19013_001E",
@@ -87,15 +87,15 @@
       ]
     },
     "integrity": {
-      "sha256": "4e1262b7b21a3995b576535c86ad0995d6d9c1f05c532a169fda6846f0a827b7",
-      "size_kb": 80.4,
-      "row_count": 935
+      "sha256": "085a60a7bc88b2fddbbaf020e1d511d74d64f3323fd05eac31a39034e5a1f421",
+      "size_kb": 98.1,
+      "row_count": 972
     },
     "version": "ACS 5-year 2024",
     "survey_window": [
       2020,
       2024
     ],
-    "downloaded_at": "2026-09-14T22:43:45Z"
+    "downloaded_at": "2026-09-15T16:20:02Z"
   }
 ]

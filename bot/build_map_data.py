@@ -58,7 +58,7 @@ def ratio(numerator, denominator):
 # --- loaders ---
 
 def load_merged(path):
-    df = pd.read_csv(path, dtype={"cbsa_code": str, "place_id": str})
+    df = pd.read_csv(path, dtype={"cbsa_code": str, "place_id": str, "geo_level": str, "parent_cbsa": str})
     for col in NUMERIC:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -114,8 +114,22 @@ def zillow_candidates(place_name):
     return list(dict.fromkeys(candidates))
 
 
+# fhfa marks divisions with a suffix the map does not need
+def display_name(place_name):
+    return re.sub(r"\s*\(MSAD\)$", "", str(place_name)).strip()
+
+
+# the parent metro of a division, named without the census suffix
+def parent_info(parent_code, centroids):
+    code = None if missing(parent_code) else str(parent_code).strip()
+    if not code or code not in centroids.index:
+        return None
+    name = re.sub(r"\s*(Metro|Micro) Area$", "", str(centroids.loc[code]["name"]))
+    return {"cbsa": code, "name": name}
+
+
 def match_zillow(place_name, frame):
-    if frame is None:
+    if frame is None or place_name is None:
         return None
     for candidate in zillow_candidates(place_name):
         if candidate in frame.index:
@@ -213,12 +227,21 @@ def build_metros(merged, centroids, zhvi=None, zori=None, bls_frame=None):
         if cbsa not in centroids.index:
             dropped += 1
             continue
-        name = str(group["place_name"].iloc[0])
+        name = display_name(group["place_name"].iloc[0])
         centroid = centroids.loc[cbsa]
         rows = {int(r["year"]): r for _, r in group.iterrows()}
 
-        zhvi_row = match_zillow(name, zhvi)
-        zori_row = match_zillow(name, zori)
+        first = group.iloc[0]
+        level = "division" if str(first.get("geo_level", "")) == "division" else "msa"
+        parent = parent_info(first.get("parent_cbsa"), centroids) if level == "division" else None
+
+        # zillow publishes metros, not divisions, so a division carries its
+        # parent's values and says so. a division with no parent gets nothing,
+        # since "Boston, MA" the division would otherwise match the metro silently
+        zillow_name = parent["name"] if parent else (name if level == "msa" else None)
+        zhvi_row = match_zillow(zillow_name, zhvi)
+        zori_row = match_zillow(zillow_name, zori)
+        zillow_scope = None if zhvi_row is None else ("parent metro" if parent else "metro")
         if zhvi is not None and zhvi_row is None:
             unmatched += 1
 
@@ -233,6 +256,9 @@ def build_metros(merged, centroids, zhvi=None, zori=None, bls_frame=None):
         metros.append({
             "cbsa": cbsa,
             "name": name,
+            "level": level,
+            "parent": parent,
+            "zillow_scope": zillow_scope,
             "lat": float(centroid["lat"]),
             "lon": float(centroid["lon"]),
             "years": {str(y): year_record(rows.get(y), zhvi_row, zori_row, bls_frame, cbsa, y) for y in STUDY_YEARS},

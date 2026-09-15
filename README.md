@@ -18,7 +18,7 @@ The two sources are the FHFA House Price Index master file and the Census ACS 5-
 
 For Census, I pull three non-overlapping vintages. Vintage 2014 covers surveys from 2010 to 2014, my post-recession baseline. Vintage 2019 covers 2015 to 2019, the pre-COVID peak. Vintage 2024 covers 2020 to 2024, the post-COVID reality. I switched to non-overlapping windows after auditing my methodology. Census's own Comparison Profile guidance is built around non-overlapping intervals. Overlapping windows would have measured the same respondents twice across vintages.
 
-The integrated dataset has 1,101 rows across 373 unique metros and three years. Five visualizations live in `results/visualizations/`. The dataset itself is at `data/integrated/hpi_census_merged.csv`.
+The integrated dataset has 1,197 rows across 410 metros, 373 metropolitan statistical areas plus 37 metropolitan divisions, and three years. Five visualizations live in `results/visualizations/`. The dataset itself is at `data/integrated/hpi_census_merged.csv`.
 
 The headline finding is a regime shift between the 2019 and 2024 vintages. The earlier top-15 list was dominated by Western tech metros like Austin, Salt Lake City, Denver, Boise, and Phoenix. The 2024 list is led by Bozeman MT, with Charleston SC, Naples FL, San Jose CA, and San Diego CA in the top five. Two Montana metros now appear in the top 15. Mountain towns and Sun Belt coastal markets replaced urban tech centers. That is the visible signature of remote-work migration.
 
@@ -53,7 +53,7 @@ After filtering to the canonical inter-metro index (MSA, quarterly, traditional,
 
 | Column | Type | Description |
 | --- | --- | --- |
-| `place_id` | string | CBSA code. Joins to Census `cbsa_code`. |
+| `place_id` | string | CBSA or metropolitan division code. Joins to Census `geo_code`. |
 | `place_name` | string | Metro name. |
 | `hpi_type` | string | Filtered to `traditional`. |
 | `hpi_flavor` | string | Filtered to `all-transactions`. |
@@ -138,7 +138,7 @@ This is how the two datasets connect.
             |  + homeownership_rate   |
             +-------------------------+
                   1101 rows
-                  373 unique metros
+                  410 unique metros
                   years: 2014, 2019, 2024
 ```
 
@@ -196,9 +196,9 @@ The pipeline can re-execute when upstream sources update. The SHA-256 mechanism 
 | Field | Value |
 | --- | --- |
 | Location | `data/integrated/hpi_census_merged.csv` |
-| Rows | 1,101 |
+| Rows | 1,197 |
 | Columns | 19 |
-| Unique metros | 373 |
+| Unique metros | 410 |
 | Years | 2014, 2019, 2024 |
 | Join | Inner join on (`place_id`, `yr`) and (`cbsa_code`, `year`) |
 
@@ -211,8 +211,8 @@ I checked five quality dimensions during integration. Profile output is captured
 | FHFA completeness | `index_nsa`: 0 nulls. `index_sa`: 100 percent nulls. | Use `index_nsa`. SA index not published at MSA level. |
 | Census completeness | Below 1 percent suppressed values per variable. | Coerce sentinel `-666666666` to NaN with `pd.to_numeric`. |
 | Type consistency | FHFA stores codes as strings. Census returns ints. Initial merge: 0 overlap. | Cast Census `cbsa_code` to string before join. |
-| Geographic coverage | 410 FHFA codes vs 1,010 Census codes. Overlap: 373. | 37 unmatched FHFA metros are likely metropolitan divisions. Crosswalk deferred to post-course work. |
-| Temporal coverage | FHFA 1975 to 2026. Census 3 vintages. | Inner join restricts to vintage years. 1,101 rows of theoretical 1,119 (373 x 3). |
+| Geographic coverage | 410 FHFA codes vs 1,010 Census CBSAs plus 37 divisions. Overlap: 410. | FHFA publishes the 13 largest metros only as divisions. ACS is pulled at the division level for those parents and four renamed division codes are crosswalked. |
+| Temporal coverage | FHFA 1975 to 2026. Census 3 vintages. | Inner join restricts to vintage years. 1,197 rows of theoretical 1,230 (410 x 3). |
 
 The most consequential issue I found was the CBSA code type mismatch. FHFA stores CBSA codes as strings. The Census API returns them as integers. The first time I ran the merge it produced zero rows. I diagnosed this as a data unavailability problem until profiling both sides showed identical numeric values stored under different types. The fix was a single line, `astype(str)` on the Census side. After that the join recovered the full 373-metro overlap.
 
@@ -220,7 +220,7 @@ The second issue was the FHFA seasonally adjusted index. I noticed `index_sa` ha
 
 The third issue was Census suppression. The Census API returns the sentinel string `-666666666` for suppressed values rather than null. Without coercion, those sentinels would survive into the integrated dataset and corrupt every aggregation downstream. I run `pd.to_numeric` with `errors="coerce"` on all eight numeric variables. The post-coerce null rate is below 1 percent per variable.
 
-The fourth issue is geographic coverage. There are 37 unmatched FHFA metros that are likely metropolitan divisions, which are sub-areas of large metros like Chicago, New York, and Los Angeles that FHFA reports separately from the parent CBSA. Resolving these requires a crosswalk table from FHFA technical notes. I deferred that to post-course work.
+The fourth issue was geographic coverage. The 37 unmatched FHFA metros were the metropolitan divisions of the 13 largest metros, which FHFA publishes instead of the parent metro. Pulling ACS at the division level for those parents and crosswalking four renamed division codes brought all 410 FHFA codes into the merge. Division rows carry `geo_level` of `division` and their parent code in `parent_cbsa`.
 
 The fifth issue is temporal coverage. Some metros do not have FHFA data for all three vintage years, usually because they are newer MSA designations. Those metros drop from the inner join, which is why my merge size is 1,101 rows out of a theoretical maximum of 1,119.
 
@@ -263,7 +263,7 @@ The modeling work continues in `ml/` in this repository. It reads `data/integrat
 ```
 pipeline (repo root, tagged final-project)
    |         produces data/integrated/hpi_census_merged.csv
-   |         1,101 rows x 19 cols, 373 metros, 3 years
+   |         1,197 rows x 23 cols, 410 metros, 3 years
    |   read-only handoff
    v
 ml/        features, baseline models, scenarios, dashboard
@@ -271,7 +271,7 @@ ml/        features, baseline models, scenarios, dashboard
 
 Five threads continue post-course.
 
-The first thread is the metropolitan-division crosswalk. The 37 unmatched FHFA metros are likely metropolitan divisions. Resolving these requires a crosswalk table from FHFA technical notes mapping division codes to parent CBSA codes. Adding this would restore the full 410-metro coverage and recover analysis on Chicago, New York, and Los Angeles sub-markets.
+The first thread, the metropolitan-division crosswalk, is done as of 2026-09-15. See the fifth challenge.
 
 The second thread is feature engineering for ML. The current integrated dataset is a foundation, not a feature set. ML-ready features include HPI growth rate (year-over-year change or log-difference between vintages), income-to-price ratio (`median_home_value / median_income`), education share (`(bachelors_count + masters_count) / total_pop`), and demographic deltas across the three vintages.
 
@@ -285,7 +285,7 @@ The biggest lesson from this project is that data curation work is mostly diagno
 
 ## The Challenges
 
-Four challenges shaped this project. I want to call them out.
+Five challenges shaped this project. I want to call them out.
 
 The first challenge was the CBSA code type mismatch. FHFA stores CBSA codes as strings. The Census API returns them as integers. The initial merge produced zero overlapping rows. I diagnosed this as a data unavailability problem until profiling both sides revealed identical numeric values stored under different types. The fix was a single line, `astype(str)` on the Census side. The lesson was that profiling both sides of any join before merging is non-negotiable.
 
@@ -294,6 +294,8 @@ The second challenge was the 2010 ACS API failure. The original plan included a 
 The third challenge was the HPI type/flavor duplication. I caught this during a methodology audit, not during initial development. My original `groupby` included `hpi_type` and `hpi_flavor` in the keys, which preserved all HPI variants into the annual aggregation. Each Census row then duplicated across variants on the merge. Pre-fix the merge was 3.77 rows per metro across three years. Post-fix it is 2.95. The lesson was that an inner join can silently inflate row counts when one side has duplicated keys, and a `rows / unique_entities` check is a good sanity step.
 
 The fourth challenge was the FHFA vintage problem, found on 2026-09-14 while proving a clean start-to-finish run. The Census half reproduced byte for byte because every ACS endpoint carries its vintage in the URL. The FHFA half did not. `hpi_master.csv` is a live file with no vintage parameter, and between May and September FHFA added two quarters and two columns, expanded one series from 7,000 rows to 58,220, and revised the historical index. My merged dataset kept its 1,101 rows, but 1,094 changed value and its SHA-256 moved from `08c906a7` to `c3d1629e` with no code change. The lesson was that when a source cannot be addressed by vintage, the archived raw file in version control is the vintage. I adopted the September pull in one dedicated commit, so `git log -- data/raw/fhfa/hpi_master.csv` shows both snapshots.
+
+The fifth challenge was the missing big metros. FHFA publishes the 13 largest metropolitan areas only as their metropolitan divisions, so Chicago, New York, Los Angeles and ten others never joined to the Census rows, which are keyed by the parent metro code. A housing study with no Chicago is not much of a housing study. The fix pulls ACS at the division level for those 13 parents, joins on the division code, and crosswalks four division codes that OMB renamed between 2013 and 2023. That raised the join from 373 metros to all 410 FHFA codes.
 
 ## The Reproducing Steps
 
@@ -353,7 +355,7 @@ To verify integrity, compare your computed SHA-256 hashes against the committed 
 
 ## The Bot and the Map
 
-`bot/` collects four more sources on a monthly GitHub Actions schedule and rebuilds `web/public/data/metros.json`: Census Gazetteer centroids for the 373 metros, Zillow ZHVI and ZORI, BLS metro unemployment, and the FRED 30-year mortgage rate. Each lands in `data/raw/<source>/` with the same manifest as FHFA and Census. Run it by hand from the root with `python -m bot.run_bot`. It needs `FRED_API_KEY`, and `BLS_API_KEY` for the 2014 unemployment values; without the BLS key it pulls 2015 onward within the keyless quota.
+`bot/` collects four more sources on a monthly GitHub Actions schedule and rebuilds `web/public/data/metros.json`: Census Gazetteer centroids for the 410 metros and divisions, Zillow ZHVI and ZORI, BLS metro unemployment, and the FRED 30-year mortgage rate. Each lands in `data/raw/<source>/` with the same manifest as FHFA and Census. Run it by hand from the root with `python -m bot.run_bot`. It needs `FRED_API_KEY`, and `BLS_API_KEY` for the 2014 unemployment values; without the BLS key it pulls 2015 onward within the keyless quota.
 
 `web/` is a React and Leaflet map of those metros, colored by a chosen metric, with a detail panel per metro. It is static, reads the committed JSON, and deploys to Cloudflare Pages from the `web` directory. Settings are in `web/README.md`.
 
