@@ -1,0 +1,252 @@
+import { describe, expect, it } from "vitest";
+import { SAMPLE } from "./data";
+import {
+  CHART_H, DETAIL_ID, INDICATOR_GROUPS, MORTGAGE_ID, buildIndicatorChart, changeChip, chartTitle, displayFormat,
+  groupIndicators, groupId, indicatorSpark, indicatorValue, monthLabel, nationalIndicators, nearestChartPoint,
+  pointReadout, rangeLabel, readIndicator, showMortgageStat, sourceLine, tileId, tileReadout,
+} from "./indicators";
+import type { Indicator, IndicatorPoint, MapData, MortgageRate } from "../types";
+
+const points = (values: number[], from = 1): IndicatorPoint[] =>
+  values.map((value, i) => ({ date: `2026-${String(from + i).padStart(2, "0")}`, value }));
+
+// a build with only a national block, for the shapes the reader must survive
+const built = (national: unknown): MapData => ({ national } as unknown as MapData);
+
+const make = (over: Partial<Indicator> = {}): Indicator => ({
+  id: "cpi",
+  label: "CPI, all items",
+  group: "Prices",
+  format: "pct",
+  provider: "BLS via FRED",
+  note: "The change in consumer prices over the last twelve months.",
+  value: 2.9,
+  date: "2026-08",
+  change_12m: 0.4,
+  history: points([2.5, 2.7, 2.9]),
+  ...over,
+});
+
+const fixture = nationalIndicators(SAMPLE);
+const byId = (id: string) => fixture.find((i) => i.id === id)!;
+
+describe("reading the block", () => {
+  it("is empty when the build carries no indicators", () => {
+    expect(nationalIndicators(null)).toEqual([]);
+    expect(nationalIndicators(undefined)).toEqual([]);
+    expect(nationalIndicators({} as MapData)).toEqual([]);
+    expect(nationalIndicators(built({ mortgage_rate: null }))).toEqual([]);
+    expect(nationalIndicators(built({ mortgage_rate: null, indicators: [] }))).toEqual([]);
+    expect(nationalIndicators(built({ mortgage_rate: null, indicators: "soon" }))).toEqual([]);
+  });
+
+  it("drops an entry that is missing what a tile needs", () => {
+    expect(readIndicator(null)).toBeNull();
+    expect(readIndicator({ id: "", group: "Prices", value: 1 })).toBeNull();
+    expect(readIndicator({ id: "cpi", group: "Prices", value: null })).toBeNull();
+    expect(readIndicator({ id: "cpi", group: "Prices", value: Number.NaN })).toBeNull();
+    expect(readIndicator({ id: "cpi", group: "Weather", value: 1 })).toBeNull();
+  });
+
+  it("fills the soft fields and keeps only usable history points", () => {
+    const read = readIndicator({
+      id: "ppi",
+      group: "Prices",
+      value: 2.2,
+      history: [{ date: "2026-07", value: 2.1 }, { date: "2026-08", value: null }, { date: "", value: 3 }, 7],
+    })!;
+    expect(read.label).toBe("ppi");
+    expect(read.format).toBe("pct");
+    expect(read.provider).toBe("");
+    expect(read.change_12m).toBeNull();
+    expect(read.history).toEqual([{ date: "2026-07", value: 2.1 }]);
+  });
+
+  it("reads the thirteen indicators the sample carries", () => {
+    expect(fixture).toHaveLength(13);
+    expect(byId("cpi").value).toBe(2.9);
+    expect(byId("mortgage").format).toBe("rate");
+    expect(byId("sentiment").group).toBe("Consumers");
+    for (const indicator of fixture) expect(indicator.history.length).toBeGreaterThan(1);
+  });
+});
+
+describe("groups", () => {
+  it("keeps the fixed order whatever order the json is in", () => {
+    const mixed = [
+      make({ id: "sentiment", group: "Consumers" }),
+      make({ id: "fed_funds", group: "Rates" }),
+      make({ id: "cpi", group: "Prices" }),
+      make({ id: "ppi", group: "Prices" }),
+    ];
+    const blocks = groupIndicators(mixed);
+    expect(blocks.map((b) => b.group)).toEqual(INDICATOR_GROUPS);
+    expect(blocks[0].indicators.map((i) => i.id)).toEqual(["cpi", "ppi"]);
+    expect(blocks[2].indicators.map((i) => i.id)).toEqual(["sentiment"]);
+  });
+
+  it("leaves out a group with nothing in it", () => {
+    expect(groupIndicators([])).toEqual([]);
+    expect(groupIndicators([make({ group: "Rates" })]).map((b) => b.group)).toEqual(["Rates"]);
+  });
+
+  it("groups the sample into prices, rates and consumers", () => {
+    expect(groupIndicators(fixture).map((b) => [b.group, b.indicators.length])).toEqual([
+      ["Prices", 5],
+      ["Rates", 4],
+      ["Consumers", 4],
+    ]);
+  });
+
+  it("names the ids the tiles and the one detail row use", () => {
+    expect(groupId("Prices")).toBe("indicator-group-prices");
+    expect(tileId("core_cpi")).toBe("indicator-tile-core_cpi");
+    expect(DETAIL_ID).toBe("national-indicator-detail");
+  });
+});
+
+describe("the displayed value", () => {
+  it("prints a percent that is already in display units without scaling it", () => {
+    expect(displayFormat("pct")).toBe("rate");
+    expect(displayFormat("rate")).toBe("rate");
+    expect(displayFormat("index")).toBe("index");
+    expect(indicatorValue(make({ value: 2.9 }))).toBe("2.9%");
+    expect(indicatorValue(make({ format: "rate", value: 6.76 }))).toBe("6.8%");
+    expect(indicatorValue(make({ format: "index", value: 58.24 }))).toBe("58.2");
+  });
+});
+
+describe("the change chip", () => {
+  it("signs a rise and names the direction", () => {
+    expect(changeChip(0.4)).toMatchObject({ direction: "up", text: "+0.4 pts", word: "up" });
+    expect(changeChip(0.4).label).toBe("up 0.4 pts over twelve months");
+  });
+
+  it("signs a fall without a second minus in the size", () => {
+    expect(changeChip(-1.25)).toMatchObject({ direction: "down", text: "-1.3 pts", word: "down" });
+    expect(changeChip(-0.75).text).toBe("-0.8 pts");
+  });
+
+  it("reads exactly zero as no change, never as a signed zero", () => {
+    const chip = changeChip(0);
+    expect(chip.text).toBe("no change");
+    expect(chip.direction).toBe("flat");
+    expect(chip.word).toBe("");
+    expect(chip.text).not.toContain("0.0");
+  });
+
+  it("reads a change too small to print as no change", () => {
+    expect(changeChip(0.04).text).toBe("no change");
+    expect(changeChip(-0.04).text).toBe("no change");
+    expect(changeChip(0.05).text).toBe("+0.1 pts");
+  });
+
+  it("says so when there is no twelve month figure", () => {
+    for (const missing of [null, undefined, Number.NaN]) {
+      const chip = changeChip(missing as number | null);
+      expect(chip.direction).toBe("none");
+      expect(chip.text).toBe("not reported");
+      expect(chip.label).toBe("twelve month change not reported");
+    }
+  });
+});
+
+describe("dates", () => {
+  it("names the month a value is for", () => {
+    expect(monthLabel("2026-08")).toBe("Aug 2026");
+    expect(monthLabel("")).toBe("");
+    expect(monthLabel(null)).toBe("");
+  });
+
+  it("names the span a history covers", () => {
+    expect(rangeLabel([])).toBe("");
+    expect(rangeLabel(points([2.9], 8))).toBe("Aug 2026");
+    expect(rangeLabel(points([2.5, 2.7, 2.9], 6))).toBe("Jun 2026 to Aug 2026");
+    expect(rangeLabel(byId("cpi").history)).toBe("Sep 2023 to Aug 2026");
+  });
+});
+
+describe("the sparkline", () => {
+  it("draws nothing at all below two points", () => {
+    expect(indicatorSpark([])).toBeNull();
+    expect(indicatorSpark(points([2.9]))).toBeNull();
+  });
+
+  it("draws one line through the points at the tile size", () => {
+    const spark = indicatorSpark(points([2.5, 2.7, 2.9]))!;
+    expect(spark.width).toBe(80);
+    expect(spark.height).toBe(24);
+    expect(spark.d).toMatch(/^M [\d.]+ [\d.]+ L /);
+    expect(spark.points).toHaveLength(3);
+    expect(spark.points[2].y).toBeLessThan(spark.points[0].y);
+  });
+
+  it("puts the newest point at the right hand edge", () => {
+    const spark = indicatorSpark(points([1, 2, 3]))!;
+    expect(spark.points[2].x).toBeGreaterThan(spark.points[0].x);
+    expect(spark.points[2].x).toBe(77);
+  });
+});
+
+describe("the expanded chart", () => {
+  const chart = buildIndicatorChart(points([2.5, 2.7, 2.6, 2.9]), 400)!;
+
+  it("needs two points, like the sparkline", () => {
+    expect(buildIndicatorChart([], 400)).toBeNull();
+    expect(buildIndicatorChart(points([2.9]), 400)).toBeNull();
+  });
+
+  it("carries the dates, the line and the range of the values", () => {
+    expect(chart.width).toBe(400);
+    expect(chart.height).toBe(CHART_H);
+    expect(chart.points.map((p) => p.date)).toEqual(["2026-01", "2026-02", "2026-03", "2026-04"]);
+    expect(chart.last).toMatchObject({ date: "2026-04", value: 2.9 });
+    expect(chart.values).toEqual([2.5, 2.9]);
+    expect(chart.d).toContain(" L ");
+  });
+
+  it("finds the point nearest the pointer", () => {
+    expect(nearestChartPoint(chart, -50)!.date).toBe("2026-01");
+    expect(nearestChartPoint(chart, 9999)!.date).toBe("2026-04");
+    const mid = chart.points[1];
+    expect(nearestChartPoint(chart, mid.x + 2)!.date).toBe("2026-02");
+    expect(nearestChartPoint(null, 10)).toBeNull();
+  });
+
+  it("reads a point out as a month and a value", () => {
+    expect(pointReadout(chart.points[1], "pct")).toBe("Feb 2026: 2.7%");
+    expect(pointReadout(chart.points[1], "index")).toBe("Feb 2026: 2.7");
+  });
+});
+
+describe("the words around a tile", () => {
+  it("reads a tile out in full", () => {
+    expect(tileReadout(make())).toBe("CPI, all items, 2.9% in Aug 2026, up 0.4 pts over twelve months");
+    expect(tileReadout(make({ date: "", change_12m: null }))).toBe("CPI, all items, 2.9%, twelve month change not reported");
+  });
+
+  it("names the chart and the span it covers", () => {
+    expect(chartTitle(make({ history: points([2.5, 2.9], 7) }))).toBe("CPI, all items, monthly, Jul 2026 to Aug 2026");
+    expect(chartTitle(make({ history: [] }))).toBe("CPI, all items");
+  });
+
+  it("names the provider and the months under the chart", () => {
+    expect(sourceLine(byId("core_pce"))).toBe("BEA via FRED, monthly, Sep 2023 to Aug 2026");
+    expect(sourceLine(make({ provider: "", history: [] }))).toBe("source not named");
+  });
+});
+
+describe("the standalone mortgage stat", () => {
+  const rate = SAMPLE.national.mortgage_rate as MortgageRate;
+
+  it("stays while the strip has no mortgage tile", () => {
+    expect(showMortgageStat(rate, [])).toBe(true);
+    expect(showMortgageStat(rate, [make({ id: "cpi" })])).toBe(true);
+  });
+
+  it("goes away once a tile carries the same rate", () => {
+    expect(showMortgageStat(rate, fixture)).toBe(false);
+    expect(showMortgageStat(rate, [make({ id: MORTGAGE_ID })])).toBe(false);
+    expect(showMortgageStat(null, [])).toBe(false);
+  });
+});

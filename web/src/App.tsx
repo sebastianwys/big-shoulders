@@ -6,6 +6,7 @@ import { MapView } from "./components/MapView";
 import { Sidebar } from "./components/Sidebar";
 import { loadBoundaries, type BoundaryIndex, type MapMode } from "./lib/boundaries";
 import { loadMapData } from "./lib/data";
+import { nationalIndicators } from "./lib/indicators";
 import { DEFS, availablePeriods, defById, metricCaption, nearestPeriod, resolveMetric, visibleDefs } from "./lib/metrics";
 import { buildScale } from "./lib/scale";
 import type { MapData, Period } from "./types";
@@ -53,6 +54,7 @@ export function App() {
   }, []);
 
   const metros = loaded?.data.metros ?? [];
+  const indicators = useMemo(() => nationalIndicators(loaded?.data), [loaded]);
   const def = (defById(defId) ?? { def: DEFS[0] }).def;
   const defs = useMemo(() => visibleDefs(metros), [metros]);
   const available = useMemo(() => availablePeriods(def, metros), [def, metros]);
@@ -74,7 +76,13 @@ export function App() {
 
   return (
     <div className="app">
-      <Header rate={loaded.data.national?.mortgage_rate ?? null} sample={loaded.sample} count={loaded.data.metros.length} />
+      <Header
+        rate={loaded.data.national?.mortgage_rate ?? null}
+        sample={loaded.sample}
+        count={loaded.data.metros.length}
+        indicators={indicators}
+        updated={loaded.data.national?.indicators_updated ?? null}
+      />
       <div className="main">
         <Sidebar
           metros={metros}

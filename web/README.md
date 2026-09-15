@@ -13,6 +13,15 @@ npm run test       # vitest, offline
 npm run build      # typecheck then vite build into dist/
 ```
 
+The white strip at the top carries the national picture: consumer prices, core
+CPI and PCE, producer prices, the fed funds rate and where futures put it a year
+out, the 30-year mortgage rate, the 10-year Treasury, consumer sentiment,
+expected inflation, unemployment and retail sales. Each tile gives the latest
+value, its twelve month change and a sparkline, and opens a row with the full
+monthly history. The numbers come from the national block of
+`public/data/metros.json`, collected from FRED, and the expanded row names the
+provider. Without it the strip is absent and the mortgage stat stays.
+
 The Shapes toggle draws each metro as its boundary instead of a dot, from
 `public/data/boundaries.json`, a TopoJSON that `npm run boundaries` builds by
 downloading the Census cartographic boundary files for metros and metropolitan

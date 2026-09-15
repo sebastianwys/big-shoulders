@@ -1,0 +1,80 @@
+import { useMemo, useRef, useState } from "react";
+import { formatValue } from "../lib/format";
+import {
+  CHART_W, buildIndicatorChart, chartTitle, displayFormat, nearestChartPoint, pointReadout, type ChartPoint,
+} from "../lib/indicators";
+import type { Indicator } from "../types";
+
+interface Props {
+  indicator: Indicator;
+  width?: number;
+}
+
+const TIP_H = 16;
+
+// the whole monthly history, no axes. a dashed rule marks where the series
+// stands today, and a crosshair follows the pointer or the arrow keys and
+// reads out the month under it
+export function IndicatorChart({ indicator, width = CHART_W }: Props) {
+  const model = useMemo(() => buildIndicatorChart(indicator.history, width), [indicator.history, width]);
+  const [hover, setHover] = useState<ChartPoint | null>(null);
+  const svg = useRef<SVGSVGElement>(null);
+  if (!model) return <p className="muted">no monthly history</p>;
+
+  const { last, height } = model;
+  const title = chartTitle(indicator);
+  const value = (v: number) => formatValue(v, displayFormat(indicator.format));
+
+  const onMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const box = svg.current?.getBoundingClientRect();
+    if (!box || box.width === 0) return;
+    setHover(nearestChartPoint(model, ((e.clientX - box.left) * width) / box.width));
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<SVGSVGElement>) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+    e.preventDefault();
+    const step = e.key === "ArrowRight" ? 1 : -1;
+    const i = hover ? model.points.findIndex((p) => p.date === hover.date) : -1;
+    const next = i < 0 ? (step > 0 ? 0 : model.points.length - 1) : Math.min(model.points.length - 1, Math.max(0, i + step));
+    setHover(model.points[next] ?? null);
+  };
+
+  const text = hover ? pointReadout(hover, indicator.format) : "";
+  const tipW = text.length * 5.4 + 12;
+  const tipX = hover ? (hover.x + 8 + tipW > width ? hover.x - 8 - tipW : hover.x + 8) : 0;
+  const anchor = last.x > width - 40 ? "end" : "middle";
+
+  return (
+    <svg
+      ref={svg}
+      className="ind-chart"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={`${title}, arrow keys read out each month`}
+      tabIndex={0}
+      onMouseMove={onMove}
+      onMouseLeave={() => setHover(null)}
+      onKeyDown={onKeyDown}
+      onBlur={() => setHover(null)}
+    >
+      <title>{title}</title>
+      <line className="now" x1={0} x2={width} y1={last.y} y2={last.y} />
+      {model.d && <path className="line" d={model.d} />}
+      <circle className="dot" cx={last.x} cy={last.y} r={3} />
+      <text className="lbl end" x={last.x} y={last.y - 8} textAnchor={anchor}>{value(last.value)}</text>
+      {hover && (
+        <g className="hover" aria-hidden="true">
+          <line className="crosshair" x1={hover.x} x2={hover.x} y1={0} y2={height} />
+          <circle className="ring" cx={hover.x} cy={hover.y} r={4} />
+          <g transform={`translate(${tipX} 1)`}>
+            <rect className="tip" width={tipW} height={TIP_H} rx={3} />
+            <text className="tip-text" x={6} y={11.5}>{text}</text>
+          </g>
+        </g>
+      )}
+    </svg>
+  );
+}

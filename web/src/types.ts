@@ -108,6 +108,40 @@ export interface MortgageRate {
   latest_date: string;
 }
 
+// one month of a national indicator, dated "YYYY-MM"
+export interface IndicatorPoint {
+  date: string;
+  value: number;
+}
+
+export type IndicatorGroup = "Prices" | "Rates" | "Consumers";
+
+// the units a national indicator arrives in. every value is already in
+// display units, so 2.9 means 2.9 percent
+export type IndicatorFormat = "pct" | "rate" | "index";
+
+// one national figure with its monthly history, for the header strip
+export interface Indicator {
+  id: string;
+  label: string;
+  group: IndicatorGroup;
+  format: IndicatorFormat;
+  provider: string;
+  note: string;
+  value: number;
+  date: string;
+  change_12m: number | null;
+  history: IndicatorPoint[];
+}
+
+// the national block. a build made before the indicators were collected
+// carries the mortgage rate alone, so both fields are optional
+export interface National {
+  mortgage_rate: MortgageRate | null;
+  indicators_updated?: string;
+  indicators?: Indicator[];
+}
+
 // one version string per source folder the bot found, keyed by folder name
 export interface Sources {
   gazetteer: string;
@@ -121,6 +155,6 @@ export interface MapData {
   generated_at: string;
   years: number[];
   sources: Sources;
-  national: { mortgage_rate: MortgageRate | null };
+  national: National;
   metros: Metro[];
 }

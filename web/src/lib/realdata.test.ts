@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { buildHistory, forecastOf } from "./history";
+import { INDICATOR_GROUPS, groupIndicators, indicatorSpark, monthLabel, nationalIndicators } from "./indicators";
 import { DEFS, METRICS, availablePeriods, resolveMetric, visibleDefs } from "./metrics";
 import { rankMetros } from "./rank";
 import { buildScale } from "./scale";
@@ -86,5 +87,24 @@ describe.skipIf(!present)("built metros.json", () => {
       const history = buildHistory(series, forecastOf(m));
       for (const p of [...history.points, ...history.forecast]) expect(Number.isFinite(p.x) && Number.isFinite(p.y), m.cbsa).toBe(true);
     }
+  });
+
+  // the national indicators are optional until the bot collects them, so
+  // this only checks that the strip can read what is there
+  it("carries national indicators the strip can draw, where the block is present", () => {
+    const raw = data!.national?.indicators;
+    if (!raw) return;
+    const read = nationalIndicators(data!);
+    expect(read.length, "every entry is readable").toBe(raw.length);
+    for (const i of read) {
+      expect(INDICATOR_GROUPS, i.id).toContain(i.group);
+      expect(["pct", "rate", "index"], i.id).toContain(i.format);
+      expect(monthLabel(i.date), i.id).not.toBe("");
+      expect(i.history.length, i.id).toBeLessThanOrEqual(60);
+      for (const p of i.history) expect(monthLabel(p.date), i.id).not.toBe("");
+      const spark = indicatorSpark(i.history);
+      if (spark) for (const p of spark.points) expect(Number.isFinite(p.x) && Number.isFinite(p.y), i.id).toBe(true);
+    }
+    expect(groupIndicators(read).map((b) => b.group)).toEqual(INDICATOR_GROUPS.filter((g) => read.some((i) => i.group === g)));
   });
 });

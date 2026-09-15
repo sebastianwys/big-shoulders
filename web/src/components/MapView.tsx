@@ -33,6 +33,19 @@ function FlyTo({ metro }: { metro: Metro | null }) {
   return null;
 }
 
+// the header grows when a national tile is opened, so the map remeasures
+// rather than drawing at the height it started with
+function Resizes() {
+  const map = useMap();
+  useEffect(() => {
+    if (typeof ResizeObserver === "undefined") return;
+    const watch = new ResizeObserver(() => map.invalidateSize());
+    watch.observe(map.getContainer());
+    return () => watch.disconnect();
+  }, [map]);
+  return null;
+}
+
 interface Props {
   metros: Metro[];
   metric: Metric;
@@ -60,6 +73,7 @@ export function MapView({ metros, metric, scale, selectedCbsa, onSelect, mode, b
   return (
     <MapContainer center={CENTER} zoom={4} minZoom={3} renderer={renderer} preferCanvas scrollWheelZoom>
       <TileLayer attribution={OSM_ATTRIBUTION} url={OSM} />
+      <Resizes />
       {drawShapes && (
         <ShapeLayer shapes={shapes} metric={metric} scale={scale} selectedCbsa={selectedCbsa} onSelect={onSelect} />
       )}
