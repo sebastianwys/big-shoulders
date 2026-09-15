@@ -1,0 +1,45 @@
+[
+  {
+    "filename": "metrics.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "the_loop.export",
+      "provider": "The Loop forecasting model",
+      "access_method": "computed",
+      "dataset": "house price index growth forecasts with 90 percent conformal bands, realized growth and forecast surprise by metro"
+    },
+    "integrity": {
+      "sha256": "a6bf94c7d911f726a055f5638b3a7c2c02988da80152b4b9b4a9190024442aa4",
+      "size_kb": 138.3,
+      "row_count": 3690
+    },
+    "version": "seqgru, origin 2026Q2",
+    "downloaded_at": "2026-09-15T21:49:20Z",
+    "notes": {
+      "model": "seqgru",
+      "origin": "2026Q2",
+      "period": "2026-06",
+      "horizons": [
+        4,
+        8
+      ],
+      "metros": 410,
+      "rows_by_metric": {
+        "hpi_forecast_4q": 410,
+        "hpi_forecast_4q_hi": 410,
+        "hpi_forecast_4q_lo": 410,
+        "hpi_forecast_8q": 410,
+        "hpi_forecast_8q_hi": 410,
+        "hpi_forecast_8q_lo": 410,
+        "hpi_surprise_4q": 410,
+        "hpi_trend_5y": 410,
+        "hpi_yoy_latest": 410
+      },
+      "inputs": {
+        "forecasts.csv": "dd4750f76262b3111c92b764926cb9f4bdd43aad25249c4627bc756b19bd0b72",
+        "panel.parquet": "be46e186d58732d450759c48c4078f1325a00f734cd3b86e93f48768b627b989",
+        "predictions_seqgru.parquet": "ceb92e78b0c527b91455dae34706e09ed5f5f0ca1036d4a671f2c0cbb1c0b213"
+      }
+    }
+  }
+]

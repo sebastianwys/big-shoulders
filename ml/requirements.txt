@@ -16,6 +16,8 @@ plotly>=5.17.0
 # notebooks
 jupyter>=1.0.0
 
+# forecasting
+torch>=2.5.0
+
 # deferred until the wave starts:
-#   torch, wave 2: pip install torch --index-url https://download.pytorch.org/whl/cpu
 #   streamlit, wave 3
