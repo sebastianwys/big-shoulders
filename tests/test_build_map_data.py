@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 from bot import build_map_data as bm
+from bot import indicators
 
 MERGED_COLS = [
     "place_id", "place_name", "hpi_type", "hpi_flavor", "yr", "avg_index_nsa",
@@ -73,6 +74,23 @@ FORECAST_ROWS = [
     "10180,hpi_yoy_latest,2026-06,2.0", "10180,hpi_trend_5y,2026-06,5.4", "10180,hpi_surprise_4q,2026-06,-1.1",
 ]
 
+# two months of every series the contract asks for: a rate that looks like a
+# rate, and an index that rose three percent
+NATIONAL_LEVELS = {
+    "DGS1": (4.20, 3.60), "DGS10": (4.08, 4.48), "EFFR": (4.33, 4.08),
+    "DFEDTARU": (4.50, 4.25), "MORTGAGE30US": (6.58, 6.35),
+    "UMCSENT": (67.9, 55.1), "MICH": (3.2, 4.6), "UNRATE": (4.3, 3.9),
+}
+
+
+def national_rows():
+    lines = ["series_id,date,value"]
+    for series in indicators.series_ids():
+        older, newer = NATIONAL_LEVELS.get(series, (100.0, 103.0))
+        lines += [f"{series},2025-08-01,{older}", f"{series},2026-08-01,{newer}"]
+    return "\n".join(lines) + "\n"
+
+
 FRED = pd.DataFrame({
     "date": ["2014-01-02", "2014-01-09", "2019-01-03", "2024-01-04", "2024-01-11", "2026-09-10", "2026-09-17"],
     "value": [4.5, 4.3, 4.0, 6.6, 6.8, 6.76, None],
@@ -92,6 +110,8 @@ def write_fixtures(folder):
         "zori": folder / "zori.csv",
         "bls": folder / "bls.csv",
         "fred": folder / "fred.csv",
+        # absent unless a test writes it, like fhfa below
+        "national": folder / "indicators.csv",
         # absent unless a test writes it, so the real master file stays out
         "fhfa": folder / "hpi_master.csv",
     }
@@ -537,3 +557,29 @@ class TestPriceHistory(BuildCase):
     def test_no_history_file_means_no_series_key(self):
         abilene = self.metro(self.build(fhfa=Path(self.tmp.name) / "absent.csv"), "10180")
         self.assertNotIn("series", abilene)
+
+
+class TestNationalIndicators(BuildCase):
+    def test_indicators_follow_the_contract_order_and_keys(self):
+        Path(self.paths["national"]).write_text(national_rows())
+        block = self.build()["national"]
+        self.assertEqual(block["mortgage_rate"]["latest"], 6.76)
+        self.assertEqual(block["indicators_updated"], "2026-08-01")
+        records = block["indicators"]
+        self.assertEqual([r["id"] for r in records], [spec["id"] for spec in indicators.INDICATORS])
+        self.assertEqual(list(records[0]), ["id", "label", "group", "format", "provider",
+                                            "note", "value", "date", "change_12m", "history"])
+        tiles = {r["id"]: r for r in records}
+        self.assertEqual((tiles["cpi"]["value"], tiles["cpi"]["date"]), (3.0, "2026-08"))
+        self.assertEqual(tiles["cpi"]["history"], [{"date": "2026-08", "value": 3.0}])
+        self.assertEqual((tiles["unemployment"]["value"], tiles["unemployment"]["change_12m"]), (3.9, -0.4))
+        # the one year treasury less the effective funds rate, same month
+        self.assertEqual(tiles["rate_path"]["value"], -0.48)
+
+    def test_missing_national_file_leaves_the_rest_intact(self):
+        payload = self.build()
+        self.assertEqual(list(payload["national"]), ["mortgage_rate"])
+        self.assertEqual(payload["national"]["mortgage_rate"]["latest_date"], "2026-09-10")
+        self.assertEqual(payload["sources"]["fred"], "through 2026-09-10")
+        self.assertEqual(len(payload["metros"]), 3)
+        self.assertEqual(self.metro(payload, "10180")["latest"]["zhvi"], 170000.0)

@@ -1,0 +1,44 @@
+[
+  {
+    "filename": "indicators.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://api.stlouisfed.org/fred/series/observations",
+      "provider": "Federal Reserve Bank of St. Louis, FRED",
+      "access_method": "REST API",
+      "dataset": "national indicators for the map's dashboard strip, one row per series and observation"
+    },
+    "integrity": {
+      "sha256": "5624a78e3287de0a2b6c079e0ee7884acea1b172059e362b3311e4395f3e825b",
+      "size_kb": 128.2,
+      "row_count": 5199
+    },
+    "version": "through 2026-09-15",
+    "downloaded_at": "2026-09-15T22:52:50Z",
+    "notes": {
+      "series": [
+        "CPIAUCSL",
+        "CPILFESL",
+        "PCEPILFE",
+        "PPIFIS",
+        "PPIFES",
+        "DFEDTARU",
+        "DGS1",
+        "EFFR",
+        "MORTGAGE30US",
+        "DGS10",
+        "UMCSENT",
+        "MICH",
+        "UNRATE",
+        "RRSFS"
+      ],
+      "daily_series_cut_to_the_last_observation_of_each_month": [
+        "DGS1",
+        "DGS10",
+        "EFFR",
+        "DFEDTARU"
+      ],
+      "missing_observations": "fred publishes a dot, written here as an empty value"
+    }
+  }
+]

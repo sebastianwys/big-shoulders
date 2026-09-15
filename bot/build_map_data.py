@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from bot import indicators
 from bot.collectors.gazetteer import YEAR as GAZETTEER_YEAR
 from bot.common import BASE_DIR, INTEGRATED, RAW_DIR, STUDY_YEARS, WEB_DATA_DIR, utc_now
 
@@ -16,6 +17,7 @@ DEFAULT_PATHS = {
     "zori": RAW_DIR / "zillow" / "zori_metro.csv",
     "bls": RAW_DIR / "bls" / "laus_metro_unemployment.csv",
     "fred": RAW_DIR / "fred" / "mortgage30us.csv",
+    "national": RAW_DIR / "national" / "indicators.csv",
     "fhfa": RAW_DIR / "fhfa" / "hpi_master.csv",
 }
 
@@ -124,6 +126,13 @@ def load_fred(path):
     return df
 
 
+# one row per series and observation, written by bot/collectors/national.py
+def load_national(path):
+    df = pd.read_csv(path, dtype={"series_id": str, "date": str})
+    df["value"] = pd.to_numeric(df["value"], errors="coerce")
+    return df
+
+
 # --- zillow ---
 
 # fhfa says "Chicago-Naperville-Elgin, IL-IN-WI", zillow says "Chicago, IL".
@@ -225,6 +234,104 @@ def fred_latest(frame):
         return None, None
     last = rows.iloc[-1]
     return float(last["value"]), str(last["date"])
+
+
+# --- national indicators ---
+
+# the dashboard strip. bot/indicators.py names the tiles, this turns the
+# collector's csv into one record per tile in that order
+
+# round() hands back -0.0 for a small negative, which json prints as -0.0.
+# adding zero folds it onto plain zero
+def rnd_zero(value, digits):
+    return round(float(value), digits) + 0.0
+
+
+# one number per calendar month per series, keyed yyyy-mm. the last observation
+# of a month wins, and a month with nothing but missing values has no key
+def monthly_grid(frame):
+    grid = {}
+    rows = frame.dropna(subset=["value"]).sort_values("date")
+    for series_id, group in rows.groupby("series_id"):
+        grid[str(series_id)] = {str(d)[:7]: float(v) for d, v in zip(group["date"], group["value"])}
+    return grid
+
+
+# the yyyy-mm that many months earlier
+def month_back(month, count):
+    index = int(month[:4]) * 12 + int(month[5:7]) - 1 - count
+    return f"{index // 12:04d}-{index % 12 + 1:02d}"
+
+
+# a rounded difference, none when either side is missing
+def diff(later, earlier, digits=1):
+    if missing(later) or missing(earlier):
+        return None
+    return rnd_zero(later - earlier, digits)
+
+
+# the tile's own number for every month it can be made for. a month it cannot
+# be made for is left out, never filled from a nearer one
+def indicator_months(spec, grid):
+    months = grid.get(spec["series"]) or {}
+    kind = spec["transform"]
+    if kind == "level":
+        return dict(months)
+    if kind == "yoy":
+        out = {}
+        for month, value in months.items():
+            base = months.get(month_back(month, 12))
+            # a hole twelve months back, or a zero base, drops the month
+            if base:
+                out[month] = rnd_zero(100.0 * (value / base - 1.0), 1)
+        return out
+    if kind == "spread":
+        against = grid.get(spec.get("against")) or {}
+        # both sides publish two decimals, so the difference keeps two
+        return {m: rnd_zero(v - against[m], 2) for m, v in months.items() if m in against}
+    raise ValueError(f"{spec['id']}: unknown transform {kind}")
+
+
+# value and date are the newest month with a number, history is the last
+# HISTORY_MONTHS of them, oldest first
+def indicator_record(spec, months):
+    dates = sorted(months)
+    newest = dates[-1]
+    value = months[newest]
+    return {
+        "id": spec["id"],
+        "label": spec["label"],
+        "group": spec["group"],
+        "format": spec["format"],
+        "provider": spec["provider"],
+        "note": spec["note"],
+        "value": value,
+        "date": newest,
+        "change_12m": diff(value, months.get(month_back(newest, 12))),
+        "history": [{"date": m, "value": rnd_zero(months[m], 1)} for m in dates[-indicators.HISTORY_MONTHS:]],
+    }
+
+
+# an indicator the csv cannot make a single month for is left out rather than
+# shown as a row of nulls
+def indicator_list(frame):
+    grid = monthly_grid(frame)
+    records, skipped = [], []
+    for spec in indicators.INDICATORS:
+        months = indicator_months(spec, grid)
+        if months:
+            records.append(indicator_record(spec, months))
+        else:
+            skipped.append(spec["id"])
+    if skipped:
+        print(f"[build] national indicators with no data, skipped: {', '.join(skipped)}")
+    return records
+
+
+# the newest observation date in the file, the age of the whole strip
+def indicators_updated(frame):
+    dates = frame.dropna(subset=["value"])["date"]
+    return str(dates.max()) if len(dates) else None
 
 
 # --- generic enrichment ---
@@ -416,14 +523,20 @@ def fred_version(frame):
     return None if date is None else f"through {date}"
 
 
-def national_block(fred_frame):
-    if fred_frame is None:
-        return None
-    latest, date = fred_latest(fred_frame)
-    block = {str(y): rnd(fred_annual(fred_frame, y), 2) for y in STUDY_YEARS}
-    block["latest"] = rnd(latest, 2)
-    block["latest_date"] = date
-    return {"mortgage_rate": block}
+# the mortgage rate tile and the indicator strip share the block. either
+# input can be absent, and the block is dropped only when both are
+def national_block(fred_frame, national_frame=None):
+    block = {}
+    if fred_frame is not None:
+        latest, date = fred_latest(fred_frame)
+        rate = {str(y): rnd(fred_annual(fred_frame, y), 2) for y in STUDY_YEARS}
+        rate["latest"] = rnd(latest, 2)
+        rate["latest_date"] = date
+        block["mortgage_rate"] = rate
+    if national_frame is not None:
+        block["indicators_updated"] = indicators_updated(national_frame)
+        block["indicators"] = indicator_list(national_frame)
+    return block or None
 
 
 # optional inputs come back as none with a note instead of failing the build
@@ -446,6 +559,7 @@ def build(out_path=None, paths=None):
     zori = optional(p["zori"], load_zillow, "zillow zori")
     bls_frame = optional(p["bls"], load_bls, "bls")
     fred_frame = optional(p["fred"], load_fred, "fred")
+    national_frame = optional(p["national"], load_national, "national indicators")
     fhfa_series = optional(p["fhfa"], load_fhfa_series, "fhfa history")
     enrichments = discover_enrichments(p["enrichment_dir"], p["forecast_dir"])
 
@@ -461,7 +575,7 @@ def build(out_path=None, paths=None):
             "fred": fred_version(fred_frame),
             **{e["name"]: enrichment_version(e["folder"]) for e in enrichments},
         },
-        "national": national_block(fred_frame),
+        "national": national_block(fred_frame, national_frame),
         "metros": metros,
     }
 
