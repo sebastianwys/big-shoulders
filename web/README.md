@@ -16,7 +16,7 @@ npm run build      # typecheck then vite build into dist/
 The Shapes toggle draws each metro as its boundary instead of a dot, from
 `public/data/boundaries.json`, a TopoJSON that `npm run boundaries` builds by
 downloading the Census cartographic boundary files for metros and metropolitan
-divisions and simplifying them with mapshaper. The zips stay in
+divisions and simplifying them with mapshaper, a one-off tool installed for that run with `npm install --no-save mapshaper@0.7` rather than kept as a dependency. The zips stay in
 `data/raw/boundaries/` with a manifest; the TopoJSON is committed and fetched
 only when Shapes is first chosen.
 

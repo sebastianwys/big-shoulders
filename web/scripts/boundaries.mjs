@@ -1,12 +1,13 @@
 // downloads the census cartographic boundary shapefiles for core based
 // statistical areas and metropolitan divisions, simplifies them with mapshaper
 // and writes one topojson the map fetches the first time shapes are asked for.
-// from web/:  npm run boundaries
+// from web/:  npm install --no-save mapshaper@0.7 && npm run boundaries
+// mapshaper is a one-off tool with a 150 mb dependency tree, so it is not a
+// dependency of the app and is loaded only when this script runs
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import mapshaper from "mapshaper";
 
 const YEAR = 2024;
 // 35% keeps the coastlines readable at street level and lands under 1 mb
@@ -36,7 +37,16 @@ async function download(name) {
   return buffer;
 }
 
+async function loadMapshaper() {
+  try {
+    return (await import("mapshaper")).default;
+  } catch {
+    throw new Error("mapshaper is not installed. run: npm install --no-save mapshaper@0.7");
+  }
+}
+
 async function main() {
+  const mapshaper = await loadMapshaper();
   await mkdir(RAW, { recursive: true });
   await mkdir(path.dirname(OUT), { recursive: true });
 
