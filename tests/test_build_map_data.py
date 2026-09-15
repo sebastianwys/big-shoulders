@@ -92,6 +92,8 @@ def write_fixtures(folder):
         "zori": folder / "zori.csv",
         "bls": folder / "bls.csv",
         "fred": folder / "fred.csv",
+        # absent unless a test writes it, so the real master file stays out
+        "fhfa": folder / "hpi_master.csv",
     }
     pd.DataFrame(MERGED, columns=MERGED_COLS).to_csv(paths["merged"], index=False)
     CENTROIDS.to_csv(paths["centroids"], index=False)
@@ -497,3 +499,41 @@ class TestEnrichment(unittest.TestCase):
         self.assertEqual(abi["years"]["2024"]["permits"], 850.0)
         # a monthly period is latest only, never a year panel
         self.assertIsNone(abi["years"]["2024"]["hpi_forecast_4q"])
+
+
+# the fhfa master file, four quarters a year for one metro and a metro with
+# a missing year, plus rows the loader must drop (state level, purchase-only)
+def fhfa_fixture():
+    rows = []
+    for year in (2000, 2001, 2002):
+        for q in (1, 2, 3, 4):
+            rows.append(("traditional", "all-transactions", "quarterly", "MSA", "10180", str(year), str(q), 100.0 + 10 * (year - 2000) + q))
+    for year in (2000, 2002):
+        rows.append(("traditional", "all-transactions", "quarterly", "MSA", "19100", str(year), "1", 200.0 + (year - 2000)))
+    rows.append(("traditional", "all-transactions", "quarterly", "MSA", "10180", "2003", "1", 150.0))
+    rows.append(("traditional", "all-transactions", "quarterly", "MSA", "10180", "2003", "2", 152.0))
+    rows.append(("traditional", "purchase-only", "quarterly", "MSA", "10180", "2003", "2", 999.0))
+    rows.append(("traditional", "all-transactions", "quarterly", "State", "10180", "2003", "2", 999.0))
+    rows.append(("traditional", "all-transactions", "quarterly", "MSA", "10180", "1999", "4", 999.0))
+    return pd.DataFrame(rows, columns=["hpi_type", "hpi_flavor", "frequency", "level", "place_id", "yr", "period", "index_nsa"])
+
+
+class TestPriceHistory(BuildCase):
+    def test_series_is_the_annual_mean_from_2000_with_the_last_quarter(self):
+        path = Path(self.tmp.name) / "hpi_master.csv"
+        fhfa_fixture().to_csv(path, index=False)
+        abilene = self.metro(self.build(fhfa=path), "10180")
+        self.assertEqual(abilene["series"]["hpi"]["start"], 2000)
+        self.assertEqual(abilene["series"]["hpi"]["values"], [102.5, 112.5, 122.5, 151.0])
+        self.assertEqual(abilene["series"]["hpi"]["as_of"], "2003Q2")
+
+    def test_missing_year_is_a_null_gap(self):
+        path = Path(self.tmp.name) / "hpi_master.csv"
+        fhfa_fixture().to_csv(path, index=False)
+        series = bm.load_fhfa_series(path)
+        self.assertEqual(series["19100"]["values"], [200.0, None, 202.0])
+        self.assertEqual(series["19100"]["as_of"], "2002Q1")
+
+    def test_no_history_file_means_no_series_key(self):
+        abilene = self.metro(self.build(fhfa=Path(self.tmp.name) / "absent.csv"), "10180")
+        self.assertNotIn("series", abilene)

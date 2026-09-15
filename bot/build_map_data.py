@@ -16,7 +16,12 @@ DEFAULT_PATHS = {
     "zori": RAW_DIR / "zillow" / "zori_metro.csv",
     "bls": RAW_DIR / "bls" / "laus_metro_unemployment.csv",
     "fred": RAW_DIR / "fred" / "mortgage30us.csv",
+    "fhfa": RAW_DIR / "fhfa" / "hpi_master.csv",
 }
+
+# the detail panel draws the price history from this year on, one annual
+# mean of the quarterly index per year, the last year partial
+SERIES_START = 2000
 
 # zillow monthly columns look like 2024-01-31
 MONTH = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -87,6 +92,30 @@ def load_bls(path):
     df["year"] = pd.to_numeric(df["year"], errors="coerce").astype(int)
     df["value"] = pd.to_numeric(df["value"], errors="coerce")
     return df
+
+
+# the fhfa master file holds every quarter since 1975 for every metro and
+# division. keep the one series the pipeline uses, average it by year from
+# SERIES_START and remember the last quarter, so the panel can label the
+# partial year
+def load_fhfa_series(path):
+    df = pd.read_csv(path, dtype={"place_id": str, "yr": str, "period": str}, usecols=[
+        "hpi_type", "hpi_flavor", "frequency", "level", "place_id", "yr", "period", "index_nsa"])
+    keep = (df["level"] == "MSA") & (df["frequency"] == "quarterly") & (df["hpi_type"] == "traditional") & (df["hpi_flavor"] == "all-transactions")
+    df = df[keep].copy()
+    df["yr"] = pd.to_numeric(df["yr"], errors="coerce")
+    df["period"] = pd.to_numeric(df["period"], errors="coerce")
+    df["index_nsa"] = pd.to_numeric(df["index_nsa"], errors="coerce")
+    df = df.dropna(subset=["yr", "period", "index_nsa"])
+    df = df[df["yr"] >= SERIES_START]
+    series = {}
+    for code, group in df.groupby("place_id"):
+        annual = group.groupby("yr")["index_nsa"].mean()
+        last_year = int(annual.index.max())
+        values = [rnd(annual.get(year), 1) if year in annual.index else None for year in range(SERIES_START, last_year + 1)]
+        newest = group.sort_values(["yr", "period"]).iloc[-1]
+        series[str(code)] = {"start": SERIES_START, "values": values, "as_of": f"{int(newest['yr'])}Q{int(newest['period'])}"}
+    return series
 
 
 def load_fred(path):
@@ -310,7 +339,7 @@ def year_record(row, zhvi_row, zori_row, bls_frame, cbsa, year):
     }
 
 
-def build_metros(merged, centroids, zhvi=None, zori=None, bls_frame=None, enrichments=()):
+def build_metros(merged, centroids, zhvi=None, zori=None, bls_frame=None, enrichments=(), series=None):
     metros, dropped, unmatched = [], 0, 0
     y0, y1, y2 = STUDY_YEARS
     for cbsa, group in merged.groupby("cbsa_code", sort=False):
@@ -366,6 +395,8 @@ def build_metros(merged, centroids, zhvi=None, zori=None, bls_frame=None, enrich
             },
             "ptir": {str(y): rnd(ratio(value(y, "median_home_value"), value(y, "median_income")), 4) for y in STUDY_YEARS},
         }
+        if series and cbsa in series:
+            record["series"] = {"hpi": series[cbsa]}
         metros.append(apply_enrichments(record, enrichments, parent["cbsa"] if parent else None))
 
     metros.sort(key=lambda m: m["name"])
@@ -415,9 +446,10 @@ def build(out_path=None, paths=None):
     zori = optional(p["zori"], load_zillow, "zillow zori")
     bls_frame = optional(p["bls"], load_bls, "bls")
     fred_frame = optional(p["fred"], load_fred, "fred")
+    fhfa_series = optional(p["fhfa"], load_fhfa_series, "fhfa history")
     enrichments = discover_enrichments(p["enrichment_dir"], p["forecast_dir"])
 
-    metros, dropped, unmatched = build_metros(merged, centroids, zhvi, zori, bls_frame, enrichments)
+    metros, dropped, unmatched = build_metros(merged, centroids, zhvi, zori, bls_frame, enrichments, fhfa_series)
 
     payload = {
         "generated_at": utc_now(),
