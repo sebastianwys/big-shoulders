@@ -8,3 +8,6 @@ data/raw/zillow/*.csv
 # boundary shapefiles are fetched by npm run boundaries, the topojson is committed
 data/raw/boundaries/*.zip
 data/raw/boundaries/trial_*.json
+
+# local handoff notes, never committed
+HANDOFF.md

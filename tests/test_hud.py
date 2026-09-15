@@ -241,12 +241,15 @@ class TestClient(unittest.TestCase):
         self.assertEqual(len(waits), 1)
         self.assertTrue(0 < waits[0] <= hud.MIN_INTERVAL)
 
+    # a 5xx backs off exponentially, a 429 waits out the minute instead
     def test_5xx_and_429_are_retried(self, get, sleep):
         get.side_effect = [response(503), response(429), response(200, {"data": []})]
         self.assertEqual(hud.Client(TOKEN).get("https://x").status_code, 200)
         self.assertEqual(get.call_count, 3)
-        backoffs = [c.args[0] for c in sleep.call_args_list if c.args[0] >= 1]
-        self.assertEqual(backoffs, [1, 2])
+        waits = [c.args[0] for c in sleep.call_args_list]
+        self.assertIn(1, waits)  # the 503 backoff
+        self.assertIn(61.0, waits)  # the 429 window wait
+        self.assertNotIn(2, waits)  # the 429 did not consume an exponential step
 
     def test_connection_error_text_never_carries_the_token(self, get, sleep):
         get.side_effect = requests.ConnectionError(f"boom {TOKEN} boom")
@@ -432,3 +435,26 @@ class TestStudyCodes(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestRateLimitWindow(unittest.TestCase):
+    # a 429 waits out the minute (Retry-After when given) and then succeeds
+    @patch("bot.collectors.hud.time.sleep")
+    @patch("bot.collectors.hud.requests.get")
+    def test_429_waits_for_the_window_then_retries(self, get, sleep):
+        limited = Mock(status_code=429, headers={"Retry-After": "7"})
+        ok = Mock(status_code=200, headers={})
+        get.side_effect = [limited, ok]
+        client = hud.Client("tok")
+        self.assertIs(client.get("https://example.test"), ok)
+        self.assertIn(7.0, [c.args[0] for c in sleep.call_args_list])
+
+    @patch("bot.collectors.hud.time.sleep")
+    @patch("bot.collectors.hud.requests.get")
+    def test_429_without_retry_after_waits_a_minute(self, get, sleep):
+        get.side_effect = [Mock(status_code=429, headers={}), Mock(status_code=200, headers={})]
+        hud.Client("tok").get("https://example.test")
+        self.assertIn(61.0, [c.args[0] for c in sleep.call_args_list])
+
+    def test_pace_is_under_sixty_a_minute(self):
+        self.assertGreater(hud.MIN_INTERVAL, 1.0)

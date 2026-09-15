@@ -1,0 +1,119 @@
+[
+  {
+    "filename": "metrics.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://apps.bea.gov/api/data?method=GetData&datasetname=Regional&TableName=CAINC1&GeoFips=COUNTY&Year=2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024",
+      "provider": "U.S. Bureau of Economic Analysis",
+      "access_method": "Direct HTTP download",
+      "dataset": "Regional Economic Accounts, CAINC1 personal income summary, county rows summed to cbsa and metropolitan division codes, annual"
+    },
+    "integrity": {
+      "sha256": "4cef3cb7e94581823b0e281c81b96b8d782b323b276368792f1b8dd58de74ce3",
+      "size_kb": 1137.8,
+      "row_count": 31536
+    },
+    "version": "CAINC1 county rollup, 2014 through 2024",
+    "downloaded_at": "2026-09-15T18:10:00Z",
+    "notes": {
+      "metrics": {
+        "bea_personal_income": {
+          "line": "1",
+          "unit": "Thousands of dollars"
+        },
+        "bea_population": {
+          "line": "2",
+          "unit": "Number of persons"
+        },
+        "bea_income_per_capita": {
+          "derived": "personal income times 1000 over population, rounded half up to the dollar"
+        }
+      },
+      "rule": "lines 1 and 2 are pulled per county and summed to every cbsa and, inside a division, to that division too. a county counts in a year only when both lines carry a value above zero, since bea writes 0 for a geography it did not estimate that year. a combined area bea reports under its own code takes the cbsa its parts share",
+      "combined_areas": [
+        "15901",
+        "51901",
+        "51903",
+        "51907",
+        "51911",
+        "51913",
+        "51918",
+        "51919",
+        "51921",
+        "51923",
+        "51929",
+        "51931",
+        "51933",
+        "51939",
+        "51941",
+        "51942",
+        "51944",
+        "51945",
+        "51947",
+        "51949",
+        "51951",
+        "51953",
+        "51955",
+        "51958"
+      ],
+      "delineation": "https://www2.census.gov/programs-surveys/metro-micro/geographies/reference-files/2023/delineation-files/list1_2023.xlsx",
+      "years": "2014 through 2024",
+      "next_year_probed": "2026 not published",
+      "cbsa_codes": 962
+    }
+  },
+  {
+    "filename": "cainc1_line1.json",
+    "file_format": "JSON",
+    "source": {
+      "endpoint": "https://apps.bea.gov/api/data?method=GetData&datasetname=Regional&TableName=CAINC1&LineCode=1&GeoFips=COUNTY&Year=2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025",
+      "provider": "U.S. Bureau of Economic Analysis",
+      "access_method": "Direct HTTP download",
+      "dataset": "CAINC1 line 1, bea_personal_income, every county"
+    },
+    "integrity": {
+      "sha256": "771cba68045fe153aa1a4bbca7edb4bbf51ba7ed611ede5018d31d26acf51322",
+      "size_kb": 5200.2,
+      "row_count": 34639
+    },
+    "version": "CAINC1 line 1 through 2024",
+    "downloaded_at": "2026-09-15T18:10:00Z",
+    "notes": {
+      "metric": "bea_personal_income",
+      "unit": "Thousands of dollars",
+      "unit_mult": "3",
+      "year_requests": [
+        "2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025"
+      ],
+      "rows_received": 34639,
+      "rows_kept": 34639
+    }
+  },
+  {
+    "filename": "cainc1_line2.json",
+    "file_format": "JSON",
+    "source": {
+      "endpoint": "https://apps.bea.gov/api/data?method=GetData&datasetname=Regional&TableName=CAINC1&LineCode=2&GeoFips=COUNTY&Year=2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025",
+      "provider": "U.S. Bureau of Economic Analysis",
+      "access_method": "Direct HTTP download",
+      "dataset": "CAINC1 line 2, bea_population, every county"
+    },
+    "integrity": {
+      "sha256": "50844fb705b16731bafacf7d47362b50e7338aa40ec8a4f8d3878d4f9c5e991d",
+      "size_kb": 5504.1,
+      "row_count": 34639
+    },
+    "version": "CAINC1 line 2 through 2024",
+    "downloaded_at": "2026-09-15T18:10:00Z",
+    "notes": {
+      "metric": "bea_population",
+      "unit": "Number of persons",
+      "unit_mult": "0",
+      "year_requests": [
+        "2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025"
+      ],
+      "rows_received": 34639,
+      "rows_kept": 34639
+    }
+  }
+]

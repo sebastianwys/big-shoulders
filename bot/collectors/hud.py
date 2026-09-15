@@ -21,9 +21,10 @@ PROVIDER = "U.S. Department of Housing and Urban Development, HUD User"
 COLUMNS = ["cbsa_code", "metric", "period", "value"]
 TWO_BEDROOM = "Two-Bedroom"
 
-# same timeout as bot.common.fetch, and never more than two requests a second
+# same timeout as bot.common.fetch. hud allows 60 requests a minute
+# (X-RateLimit-Limit), so a little over one second between calls
 TIMEOUT = 120
-MIN_INTERVAL = 0.5
+MIN_INTERVAL = 1.05
 
 # a metro entity id carries the cbsa code twice, METRO10180M10180. a hud metro
 # fmr subarea carries MM plus an old pmsa code or N plus a county fips instead,
@@ -131,8 +132,15 @@ DATASETS = {
 
 # bot.common.fetch cannot send a header, so this repeats its policy for the
 # bearer token: same user agent and timeout, retries on connection errors and
-# 5xx, plus 429, and a pause that keeps requests at two a second. the token
-# lives only in the header and is stripped from any error text
+# 5xx, and waits out the minute on 429, with a pause that keeps requests under
+# the limit. the token lives only in the header and is stripped from any error text
+# seconds to wait on a 429: the Retry-After header when it is a number, else a minute
+def retry_after(response):
+    value = getattr(response, "headers", {}).get("Retry-After", "")
+    text = str(value)
+    return float(text) if text.replace(".", "", 1).isdigit() else 61.0
+
+
 class Client:
     def __init__(self, token):
         self.token = token
@@ -145,13 +153,18 @@ class Client:
             time.sleep(wait)
         self.last = time.monotonic()
 
-    def get(self, url, params=None, retries=3):
+    def get(self, url, params=None, retries=5):
         last_error = None
         for attempt in range(retries):
             self.pace()
             try:
                 response = requests.get(url, params=params, timeout=TIMEOUT, headers=self.headers)
-                if response.status_code < 500 and response.status_code != 429:
+                if response.status_code == 429:
+                    # the per minute window has to roll over before anything succeeds
+                    time.sleep(retry_after(response))
+                    last_error = RuntimeError("HTTP 429")
+                    continue
+                if response.status_code < 500:
                     return response
                 last_error = RuntimeError(f"HTTP {response.status_code}")
             except requests.RequestException as e:
