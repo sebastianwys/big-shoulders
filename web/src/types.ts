@@ -68,6 +68,18 @@ export interface ParentMetro {
   name: string;
 }
 
+// an annual history from the bot: one value per calendar year from start,
+// the last a partial year through as_of, null where a year is missing
+export interface AnnualSeries {
+  start: number;
+  values: (number | null)[];
+  as_of: string;
+}
+
+export interface MetroSeries {
+  hpi?: AnnualSeries | null;
+}
+
 export interface Metro {
   cbsa: string;
   name: string;
@@ -84,6 +96,8 @@ export interface Metro {
   latest: Latest;
   growth: Growth;
   ptir: Record<YearKey, number | null>;
+  // annual histories, absent from builds of metros.json older than the field
+  series?: MetroSeries | null;
 }
 
 export interface MortgageRate {

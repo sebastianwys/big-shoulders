@@ -23,9 +23,15 @@ only when Shapes is first chosen.
 The metric menu is grouped (House prices, Housing market, Rents and
 affordability, People and migration, Supply, Forecasts) and only lists metrics the built
 json actually carries, so a source without a key yet stays hidden. The "as of"
-control picks the panel a metric is read at: 2014, 2019, 2024 or the source's
-latest month or year, with periods the metric lacks disabled and change figures
-like HPI growth having none. The legend caption names the source and date.
+control is a timeline on a calendar axis from 2014 to the newest date in the
+data, with one tick per period: 2014, 2019, 2024 and latest at the source's own
+date, filled where the metric has values and hollow where it is not published,
+with the metro count under each. Arrow keys step between the filled ticks, play
+walks the map from the first to the last, and change figures like HPI growth
+show the years they span instead. The legend caption names the source and date.
+The detail panel draws the house price history as a chart with the model's
+expected path and band when the json carries an annual series, and its vintage
+tables add a trend hint per row and a latest column dated by source.
 
 Forecasts is the last group. It colors the map by the model's expected HPI
 growth over the next four and eight quarters, the realized growth over the

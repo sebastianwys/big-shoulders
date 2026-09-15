@@ -1,0 +1,148 @@
+import { describe, expect, it } from "vitest";
+import { buildHistory, forecastLevels, forecastOf, hoverables, nearestPoint, niceTicks, yearTicks, type ForecastInput } from "./history";
+import { SAMPLE } from "./data";
+import type { AnnualSeries, Metro } from "../types";
+
+const abilene = SAMPLE.metros[0];
+const dallas = SAMPLE.metros[1];
+const sparse = SAMPLE.metros[2];
+
+const full: ForecastInput = { mid4: 3.1, mid8: 6.0, lo4: -1.2, hi4: 7.0, lo8: -2.5, hi8: 14.2 };
+const flat: AnnualSeries = { start: 2014, values: [100, 110, 120], as_of: "2016-06" };
+
+describe("forecastLevels", () => {
+  it("grows the last level by each percent, one and two years out", () => {
+    const levels = forecastLevels({ year: 2026, value: 300 }, full);
+    expect(levels.map((l) => l.year)).toEqual([2027, 2028]);
+    expect(levels[0].mid).toBeCloseTo(300 * 1.031, 6);
+    expect(levels[0].lo).toBeCloseTo(300 * 0.988, 6);
+    expect(levels[0].hi).toBeCloseTo(300 * 1.07, 6);
+    expect(levels[1].mid).toBeCloseTo(318, 6);
+    expect(levels[1].lo).toBeCloseTo(300 * 0.975, 6);
+    expect(levels[1].hi).toBeCloseTo(300 * 1.142, 6);
+  });
+
+  it("drops a year without a median and a band with a missing edge", () => {
+    expect(forecastLevels({ year: 2026, value: 300 }, { ...full, mid4: null })).toMatchObject([{ year: 2028, mid: 318 }]);
+    const halfBand = forecastLevels({ year: 2026, value: 300 }, { ...full, hi4: null });
+    expect(halfBand[0]).toMatchObject({ lo: null, hi: null });
+    expect(halfBand[1].lo).not.toBeNull();
+    expect(forecastLevels({ year: 2026, value: 300 }, null)).toEqual([]);
+  });
+
+  it("reads the six fields from a metro and is null without a point", () => {
+    expect(forecastOf(abilene)).toEqual(full);
+    expect(forecastOf(sparse)).toBeNull();
+    expect(forecastOf({} as Metro)).toBeNull();
+    expect(forecastOf({ ...dallas, latest: { ...dallas.latest, hpi_forecast_4q: null } } as Metro)?.mid8).toBe(1.5);
+  });
+});
+
+describe("ticks", () => {
+  it("bracket the data with round steps", () => {
+    expect(niceTicks(186.9, 312.4)).toEqual([150, 200, 250, 300, 350]);
+    expect(niceTicks(186.9, 356.8)).toEqual([150, 200, 250, 300, 350, 400]);
+    expect(niceTicks(100, 120)).toEqual([100, 105, 110, 115, 120]);
+    expect(niceTicks(100, 120, 2)).toEqual([100, 110, 120]);
+    expect(niceTicks(0.12, 0.31)).toEqual([0.1, 0.15, 0.2, 0.25, 0.3, 0.35]);
+    expect(niceTicks(7, 7)).toEqual([6, 7, 8]);
+    expect(niceTicks(Number.NaN, 1)).toEqual([]);
+  });
+
+  it("pick whole years at a step that fits the budget", () => {
+    expect(yearTicks(2014, 2028)).toEqual([2014, 2016, 2018, 2020, 2022, 2024, 2026, 2028]);
+    expect(yearTicks(2014, 2026)).toEqual([2014, 2016, 2018, 2020, 2022, 2024, 2026]);
+    expect(yearTicks(2014, 2016)).toEqual([2014, 2015, 2016]);
+    expect(yearTicks(2000, 2040, 5)).toEqual([2000, 2010, 2020, 2030, 2040]);
+    expect(yearTicks(2016, 2014)).toEqual([]);
+  });
+});
+
+describe("buildHistory", () => {
+  it("scales years across the plot and values between round ticks", () => {
+    const h = buildHistory(flat, null, 320, 140);
+    expect(h.points.map((p) => p.year)).toEqual([2014, 2015, 2016]);
+    expect(h.points[0].x).toBe(h.left);
+    expect(h.points[2].x).toBe(h.right);
+    expect(h.points[1].x).toBeCloseTo((h.left + h.right) / 2, 0);
+    expect(h.values).toEqual([100, 120]);
+    expect(h.points[0].y).toBe(h.bottom);
+    expect(h.points[2].y).toBe(h.top);
+    expect(h.d).toBe(`M ${h.points[0].x} ${h.points[0].y} L ${h.points[1].x} ${h.points[1].y} L ${h.points[2].x} ${h.points[2].y}`);
+    expect(h.last).toEqual(h.points[2]);
+    expect(h.forecast).toEqual([]);
+    expect(h.forecastD).toBe("");
+    expect(h.bandD).toBe("");
+    expect(h.xTicks.map((t) => t.year)).toEqual([2014, 2015, 2016]);
+    expect(h.yTicks.map((t) => t.value)).toEqual([100, 105, 110, 115, 120]);
+  });
+
+  it("extends two years past the last point with the median path and a closed band", () => {
+    const series: AnnualSeries = { start: 2024, values: [280, 290, 300], as_of: "2026-06" };
+    const h = buildHistory(series, full, 320, 140);
+    expect(h.years).toEqual([2024, 2028]);
+    expect(h.forecast.map((p) => p.year)).toEqual([2027, 2028]);
+    expect(h.forecast[0].value).toBeCloseTo(309.3, 6);
+    expect(h.forecast[1].value).toBeCloseTo(318, 6);
+    expect(h.forecast[1].x).toBe(h.right);
+    expect(h.last!.x).toBeCloseTo(h.left + (h.right - h.left) / 2, 0);
+    expect(h.forecastD).toBe(`M ${h.last!.x} ${h.last!.y} L ${h.forecast[0].x} ${h.forecast[0].y} L ${h.forecast[1].x} ${h.forecast[1].y}`);
+    expect(h.bandD.startsWith(`M ${h.last!.x} ${h.last!.y} L ${h.forecast[0].x} ${h.forecast[0].yHi}`)).toBe(true);
+    expect(h.bandD.endsWith(`L ${h.forecast[0].x} ${h.forecast[0].yLo} Z`)).toBe(true);
+    expect(h.forecast[0].yHi!).toBeLessThan(h.forecast[0].y);
+    expect(h.forecast[0].yLo!).toBeGreaterThan(h.forecast[0].y);
+    expect(h.values[1]).toBeGreaterThanOrEqual(300 * 1.142);
+    expect(h.values[0]).toBeLessThanOrEqual(280);
+  });
+
+  it("draws the path without a band when an edge is missing", () => {
+    const h = buildHistory(flat, { ...full, lo4: null, lo8: null }, 320, 140);
+    expect(h.forecast).toHaveLength(2);
+    expect(h.forecastD).not.toBe("");
+    expect(h.bandD).toBe("");
+  });
+
+  it("leaves a gap at a null and starts the forecast from the last present value", () => {
+    const gappy: AnnualSeries = { start: 2014, values: [100, null, 120, 130, null], as_of: "2018-03" };
+    const h = buildHistory(gappy, full, 320, 140);
+    expect(h.points.map((p) => p.year)).toEqual([2014, 2016, 2017]);
+    expect(h.d).toBe(`M ${h.points[1].x} ${h.points[1].y} L ${h.points[2].x} ${h.points[2].y}`);
+    expect(h.last!.year).toBe(2017);
+    expect(h.forecast.map((p) => p.year)).toEqual([2018, 2019]);
+    expect(h.years).toEqual([2014, 2019]);
+  });
+
+  it("is empty for all nulls and centers a single value", () => {
+    const none = buildHistory({ start: 2014, values: [null, null], as_of: "2015" }, full);
+    expect(none.points).toEqual([]);
+    expect(none.last).toBeNull();
+    expect(none.d).toBe("");
+    const one = buildHistory({ start: 2020, values: [250], as_of: "2020" }, null, 320, 140);
+    expect(one.points[0].x).toBeCloseTo((one.left + one.right) / 2, 1);
+    expect(one.values).toEqual([249, 251]);
+    expect(Number.isFinite(one.points[0].y)).toBe(true);
+  });
+
+  it("never produces nan for constant values", () => {
+    const h = buildHistory({ start: 2014, values: [5, 5, 5], as_of: "2016" }, null);
+    for (const p of h.points) expect(Number.isFinite(p.y)).toBe(true);
+    expect(h.yTicks.map((t) => t.value)).toEqual([4, 5, 6]);
+    expect(h.points.every((p) => p.y === (h.top + h.bottom) / 2)).toBe(true);
+  });
+});
+
+describe("hover", () => {
+  const h = buildHistory({ start: 2024, values: [280, 290, 300], as_of: "2026-06" }, full, 320, 140);
+
+  it("snaps to the nearest history or forecast point by x", () => {
+    expect(nearestPoint(h, h.left - 30)).toMatchObject({ kind: "history", point: { year: 2024 } });
+    expect(nearestPoint(h, h.points[1].x + 3)).toMatchObject({ kind: "history", point: { year: 2025 } });
+    expect(nearestPoint(h, h.right + 50)).toMatchObject({ kind: "forecast", point: { year: 2028 } });
+    expect(nearestPoint(buildHistory({ start: 2014, values: [null], as_of: "2014" }, null), 10)).toBeNull();
+  });
+
+  it("lists every point in year order for keyboard stepping", () => {
+    expect(hoverables(h).map((v) => v.point.year)).toEqual([2024, 2025, 2026, 2027, 2028]);
+    expect(hoverables(h).map((v) => v.kind)).toEqual(["history", "history", "history", "forecast", "forecast"]);
+  });
+});

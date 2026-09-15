@@ -6,6 +6,7 @@ import { shapeStyle, type BoundaryProps, type Shape } from "../lib/boundaries";
 import { formatValue } from "../lib/format";
 import type { Metric } from "../lib/metrics";
 import type { ColorScale } from "../lib/scale";
+import { periodLabel } from "../lib/timeline";
 import type { Metro } from "../types";
 
 interface Props {
@@ -16,16 +17,20 @@ interface Props {
   onSelect: (cbsa: string) => void;
 }
 
-// value leads, name follows. built with textContent so a name is never parsed as html
-function tooltipContent(value: number | null, metric: Metric, name: string): HTMLElement {
+// name, value and the period the value belongs to, in one line. built with
+// textContent so a name is never parsed as html
+function tooltipContent(metro: Metro | undefined, metric: Metric): HTMLElement {
   const root = document.createElement("span");
-  const v = document.createElement("span");
-  v.className = "tv";
-  v.textContent = formatValue(value, metric.format, metric.kind === "diverging");
   const n = document.createElement("span");
   n.className = "tn";
-  n.textContent = name;
-  root.append(v, document.createTextNode(" "), n);
+  n.textContent = metro?.name ?? "";
+  const v = document.createElement("span");
+  v.className = "tv";
+  v.textContent = formatValue(metro ? metric.accessor(metro) : null, metric.format, metric.kind === "diverging");
+  const p = document.createElement("span");
+  p.className = "tp";
+  p.textContent = metro ? periodLabel(metric, metro) : "";
+  root.append(n, document.createTextNode(" "), v, document.createTextNode(" "), p);
   return root;
 }
 
@@ -63,7 +68,7 @@ export function ShapeLayer({ shapes, metric, scale, selectedCbsa, onSelect }: Pr
         const path = l as L.Path;
         const metro = metroOf.get(cbsa);
         byCbsa.set(cbsa, path);
-        path.bindTooltip(tooltipContent(metro ? metric.accessor(metro) : null, metric, metro?.name ?? ""), {
+        path.bindTooltip(tooltipContent(metro, metric), {
           className: "bs-tip",
           sticky: true,
           direction: "top",
@@ -89,7 +94,7 @@ export function ShapeLayer({ shapes, metric, scale, selectedCbsa, onSelect }: Pr
       const metro = metroOf.get(cbsa);
       const value = metro ? metric.accessor(metro) : null;
       path.setStyle(shapeStyle(value, scale, { selected: cbsa === selectedCbsa }));
-      path.setTooltipContent(tooltipContent(value, metric, metro?.name ?? ""));
+      path.setTooltipContent(tooltipContent(metro, metric));
     }
     if (selectedCbsa) paths.current.get(selectedCbsa)?.bringToFront();
   }, [shapes, metric, scale, selectedCbsa]);

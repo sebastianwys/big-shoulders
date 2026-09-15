@@ -1,4 +1,5 @@
 import { formatValue } from "../lib/format";
+import type { ValueFormat } from "../lib/metrics";
 import { buildSparkline } from "../lib/sparkline";
 
 interface Props {
@@ -45,6 +46,33 @@ export function Sparkline({ values, labels, title }: Props) {
         <text key={label} className="lbl" x={labelX(i)} y={H + 12} textAnchor={anchor(i)}>
           {label}
         </text>
+      ))}
+    </svg>
+  );
+}
+
+interface InlineProps {
+  values: (number | null)[];
+  labels: string[];
+  format: ValueFormat;
+  signed?: boolean;
+}
+
+const IW = 44;
+const IH = 14;
+
+// a hint of the shape across a table row's periods, no axis or labels. the
+// title reads the values out in full
+export function InlineSpark({ values, labels, format, signed = false }: InlineProps) {
+  const spark = buildSparkline(values, IW, IH, 3);
+  if (spark.points.length === 0) return null;
+  const text = labels.map((label, i) => `${label} ${formatValue(values[i] ?? null, format, signed)}`).join(", ");
+  return (
+    <svg className="spark-inline" width={IW} height={IH} viewBox={`0 0 ${IW} ${IH}`} role="img" aria-label={text}>
+      <title>{text}</title>
+      {spark.d && <path className="line" d={spark.d} />}
+      {spark.points.map((p) => (
+        <circle key={p.index} className="dot" cx={p.x} cy={p.y} r={1.5} />
       ))}
     </svg>
   );

@@ -1,8 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { buildHistory, forecastOf } from "./history";
 import { DEFS, METRICS, availablePeriods, resolveMetric, visibleDefs } from "./metrics";
 import { rankMetros } from "./rank";
 import { buildScale } from "./scale";
+import { buildTimeline } from "./timeline";
 import type { MapData } from "../types";
 
 // the built json is optional in ci, so this suite skips when it is absent
@@ -50,5 +52,39 @@ describe.skipIf(!present)("built metros.json", () => {
     const ranked = rankMetros(data!.metros, METRICS[0]);
     expect(ranked.length).toBeGreaterThan(300);
     expect(ranked[0].value).toBeGreaterThanOrEqual(ranked[ranked.length - 1].value);
+  });
+
+  it("builds a timeline for every visible metric whose filled ticks are the periods with data", () => {
+    for (const def of visibleDefs(data!.metros)) {
+      const model = buildTimeline(def, data!.metros);
+      if (def.periods.length === 0) {
+        expect(model.ticks, def.id).toEqual([]);
+        expect(model.span, def.id).not.toBeNull();
+        continue;
+      }
+      expect(model.ticks, def.id).toHaveLength(4);
+      expect(model.ticks.filter((t) => t.available).map((t) => t.period), def.id).toEqual(availablePeriods(def, data!.metros));
+      const latest = model.ticks[3];
+      if (latest.available) {
+        expect(latest.date, def.id).not.toBeNull();
+        expect(latest.label, def.id).not.toBe("latest");
+        expect(latest.t, def.id).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  // the annual history is optional until the bot writes it, so this only
+  // checks the shape of what is there
+  it("carries a well formed hpi series where one is present", () => {
+    for (const m of data!.metros) {
+      const series = m.series?.hpi;
+      if (!series) continue;
+      expect(Number.isInteger(series.start) && series.start >= 1990, m.cbsa).toBe(true);
+      expect(series.values.length, m.cbsa).toBeGreaterThan(0);
+      for (const v of series.values) expect(v === null || Number.isFinite(v), m.cbsa).toBe(true);
+      expect(typeof series.as_of === "string" && series.as_of.length > 0, m.cbsa).toBe(true);
+      const history = buildHistory(series, forecastOf(m));
+      for (const p of [...history.points, ...history.forecast]) expect(Number.isFinite(p.x) && Number.isFinite(p.y), m.cbsa).toBe(true);
+    }
   });
 });

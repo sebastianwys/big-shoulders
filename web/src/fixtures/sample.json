@@ -224,7 +224,28 @@
       "level": "msa",
       "parent": null,
       "zillow_scope": "metro",
-      "parent_metrics": []
+      "parent_metrics": [],
+      "series": {
+        "hpi": {
+          "start": 2014,
+          "values": [
+            186.9,
+            194.0,
+            201.5,
+            210.2,
+            218.4,
+            225.8,
+            236.1,
+            259.3,
+            288.4,
+            296.0,
+            300.1,
+            306.5,
+            312.4
+          ],
+          "as_of": "2026-06"
+        }
+      }
     },
     {
       "cbsa": "19100",

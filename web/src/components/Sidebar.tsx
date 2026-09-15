@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { formatValue } from "../lib/format";
-import { GROUPS, PERIODS, SOURCE_LABEL, type Metric, type MetricDef } from "../lib/metrics";
+import { GROUPS, SOURCE_LABEL, type Metric, type MetricDef } from "../lib/metrics";
 import { rankMetros, searchMetros } from "../lib/rank";
 import type { ColorScale } from "../lib/scale";
 import type { Metro, Period, Sources } from "../types";
 import type { MapMode } from "../lib/boundaries";
 import type { ShapesStatus } from "../App";
+import { Timeline } from "./Timeline";
 
 interface Props {
   metros: Metro[];
@@ -29,8 +30,6 @@ const SHAPES_NOTE: Partial<Record<ShapesStatus, string>> = {
   loading: "loading shapes",
   failed: "shapes unavailable, boundaries.json is missing. run npm run boundaries",
 };
-
-const PERIOD_LABEL: Record<Period, string> = { "2014": "2014", "2019": "2019", "2024": "2024", latest: "Latest" };
 
 // the attribution each source asks for, in the footer once per source present
 const CREDITS: [string, string][] = [
@@ -60,7 +59,6 @@ export function Sidebar({
   const results = useMemo(() => searchMetros(metros, query), [metros, query]);
   const ranked = useMemo(() => rankMetros(metros, metric, showAll ? undefined : 15), [metros, metric, showAll]);
   const signed = metric.kind === "diverging";
-  const noPeriod = metric.def.periods.length === 0;
   const present = new Set(Object.keys(sources).concat(["fhfa", "census"]));
   if (sources.zillow) present.add("zillow");
 
@@ -114,23 +112,7 @@ export function Sidebar({
         <p className="metric-source">{SOURCE_LABEL[metric.source]}</p>
       </div>
 
-      <div>
-        <span className="label" id="period-label">as of</span>
-        <div className="segmented" role="group" aria-labelledby="period-label">
-          {PERIODS.map((p) => (
-            <button
-              type="button"
-              key={p}
-              aria-pressed={p === period}
-              disabled={noPeriod || !available.includes(p)}
-              onClick={() => onPeriodChange(p)}
-            >
-              {PERIOD_LABEL[p]}
-            </button>
-          ))}
-        </div>
-        {noPeriod && <p className="mode-note">a change over time, no single period</p>}
-      </div>
+      <Timeline def={metric.def} metros={metros} period={period} available={available} onPeriodChange={onPeriodChange} />
 
       <div>
         <label htmlFor="search">find a metro</label>

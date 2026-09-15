@@ -1,9 +1,13 @@
+import { useMemo } from "react";
 import { geoNote, parentMetricsNote } from "../lib/geo";
 import { forecastCaption, forecastLines } from "../lib/forecast";
 import { formatValue } from "../lib/format";
-import { DEFS, GROUPS, dateAt, type MetricDef } from "../lib/metrics";
-import type { Growth, Metro, YearKey } from "../types";
-import { Sparkline } from "./Sparkline";
+import { forecastOf } from "../lib/history";
+import { DEFS, GROUPS, defDate, type MetricDef } from "../lib/metrics";
+import { dateLabel, laterStartsNote, latestColumn, publishedPeriods } from "../lib/timeline";
+import type { AnnualSeries, Growth, Metro, Period, YearKey } from "../types";
+import { HistoryChart } from "./HistoryChart";
+import { InlineSpark, Sparkline } from "./Sparkline";
 
 const YEARS: YearKey[] = ["2014", "2019", "2024"];
 
@@ -29,16 +33,59 @@ export function latestRows(metro: Metro): MetricDef[] {
   return DEFS.filter((d) => d.group !== "Forecasts" && d.periods.includes("latest") && d.valueAt(metro, "latest") !== null);
 }
 
+// one line under the chart: what the points are and where the last one ends
+function historyNote(series: AnnualSeries, forecast: boolean): string {
+  const lastYear = series.start + series.values.length - 1;
+  const asOf = dateLabel(series.as_of) ?? series.as_of;
+  const base = `Annual mean of the index; ${lastYear} runs through ${asOf}.`;
+  return forecast ? `${base} Dashed line and band: the model's expected path with its 90 percent band.` : base;
+}
+
+interface CellProps {
+  def: MetricDef;
+  metro: Metro;
+  period: Period;
+  published: Period[];
+  date: string | null;
+}
+
+// a period the measure is not published at reads as a muted dash with the
+// reason on hover; a published period this metro lacks keeps the plain dash
+function Cell({ def, metro, period, published, date }: CellProps) {
+  if (!published.includes(period)) {
+    return (
+      <td className="np" title="not published for this period">
+        <span aria-hidden="true">-</span>
+        <span className="sr">not published</span>
+      </td>
+    );
+  }
+  const value = def.valueAt(metro, period);
+  if (value === null) return <td title="no value for this metro">-</td>;
+  return (
+    <td>
+      {formatValue(value, def.format, def.kind === "diverging")}
+      {date && <span className="date">{date}</span>}
+    </td>
+  );
+}
+
 interface Props {
   metro: Metro;
+  metros: Metro[];
   onClose: () => void;
 }
 
-export function DetailPanel({ metro, onClose }: Props) {
+export function DetailPanel({ metro, metros, onClose }: Props) {
+  const published = useMemo(() => publishedPeriods(metros), [metros]);
   const hpi = YEARS.map((y) => metro.years?.[y]?.hpi ?? null);
-  const latest = latestRows(metro);
+  const history = metro.series?.hpi ?? null;
+  const forecast = forecastOf(metro);
   const forecasts = forecastLines(metro);
   const inherited = parentMetricsNote(metro);
+  // a measure in a vintage table shows its latest value there already
+  const shown = new Set(GROUPS.flatMap((group) => yearRows(metro, group).map((d) => d.id)));
+  const latest = latestRows(metro).filter((d) => !shown.has(d.id));
 
   return (
     <aside className="detail" aria-label={`${metro.name} detail`}>
@@ -51,32 +98,64 @@ export function DetailPanel({ metro, onClose }: Props) {
       </header>
 
       <h3>House price index, all transactions</h3>
-      <Sparkline values={hpi} labels={YEARS} title={`house price index for ${metro.name}, 2014, 2019 and 2024`} />
+      {history ? (
+        <>
+          <HistoryChart series={history} forecast={forecast} name={metro.name} />
+          <p className="geo-note">{historyNote(history, forecast !== null)}</p>
+        </>
+      ) : (
+        <Sparkline values={hpi} labels={YEARS} title={`house price index for ${metro.name}, 2014, 2019 and 2024`} />
+      )}
 
       {GROUPS.map((group) => {
         const rows = yearRows(metro, group);
         if (rows.length === 0) return null;
+        const column = latestColumn(metro, rows);
+        const columns: Period[] = column.show ? [...YEARS, "latest"] : YEARS;
+        const note = laterStartsNote(rows.map((d) => ({ label: d.label, periods: published[d.id] ?? d.periods })));
         return (
           <details key={group} open={group === "House prices"}>
             <summary>{group}, by vintage year</summary>
-            <table>
+            <table className="vintage">
               <thead>
                 <tr>
                   <th>measure</th>
+                  <th className="trend">trend</th>
                   {YEARS.map((y) => <th key={y}>{y}</th>)}
+                  {column.show && (
+                    <th>
+                      latest
+                      <span className="date">{column.header ?? "by source"}</span>
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {rows.map((d) => (
-                  <tr key={d.id}>
-                    <td>{d.label}</td>
-                    {YEARS.map((y) => (
-                      <td key={y}>{formatValue(d.valueAt(metro, y), d.format, d.kind === "diverging")}</td>
-                    ))}
-                  </tr>
-                ))}
+                {rows.map((d) => {
+                  const periods = published[d.id] ?? d.periods;
+                  const labels = periods.map((p) => (p === "latest" ? (column.dates[d.id] ?? "latest") : p));
+                  return (
+                    <tr key={d.id}>
+                      <td>{d.label}</td>
+                      <td className="trend">
+                        <InlineSpark values={periods.map((p) => d.valueAt(metro, p))} labels={labels} format={d.format} signed={d.kind === "diverging"} />
+                      </td>
+                      {columns.map((p) => (
+                        <Cell
+                          key={p}
+                          def={d}
+                          metro={metro}
+                          period={p}
+                          published={periods}
+                          date={p === "latest" && !column.header ? (column.dates[d.id] ?? null) : null}
+                        />
+                      ))}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
+            {note && <p className="table-note">{note}</p>}
           </details>
         );
       })}
@@ -119,7 +198,7 @@ export function DetailPanel({ metro, onClose }: Props) {
                 <tr key={d.id}>
                   <td>{d.label}</td>
                   <td>{formatValue(d.valueAt(metro, "latest"), d.format, d.kind === "diverging")}</td>
-                  <td>{dateAt(metro, "latest", d.id) ?? "-"}</td>
+                  <td>{dateLabel(defDate(d, metro, "latest"), d.source) ?? "-"}</td>
                 </tr>
               ))}
             </tbody>

@@ -35,6 +35,8 @@ export interface MetricDef {
   source: Source;
   periods: Period[];
   valueAt: (metro: Metro, period: Period | null) => number | null;
+  // the field whose _date companion dates a derived value at latest
+  dateId?: string;
 }
 
 // a definition resolved at one period. the map, legend and ranking read this
@@ -81,6 +83,11 @@ export function dateAt(metro: Metro, period: Period | null, field: string): stri
   return typeof date === "string" ? date : null;
 }
 
+// the same for a definition, which may date itself by another field
+export function defDate(def: MetricDef, metro: Metro, period: Period | null): string | null {
+  return dateAt(metro, period, def.dateId ?? def.id);
+}
+
 function field(id: Field, label: string, format: ValueFormat, kind: ScaleKind, group: Group, source: Source, periods: Period[]): MetricDef {
   return { id, label, format, kind, group, source, periods, valueAt: (m, p) => fieldAt(m, p, id) };
 }
@@ -118,7 +125,7 @@ export const DEFS: MetricDef[] = [
   field("zori", "Zillow rent index", "usd", "sequential", "Rents and affordability", "zillow", ALL),
   field("gross_rent", "Median gross rent", "usd", "sequential", "Rents and affordability", "acs", YEARS),
   field("rent_burden", "Renters paying 30% or more of income", "pct", "sequential", "Rents and affordability", "acs", YEARS),
-  { id: "rent_to_income", label: "Annual rent to household income", format: "pct", kind: "sequential", group: "Rents and affordability", source: "acs", periods: YEARS,
+  { id: "rent_to_income", label: "Annual rent to household income", format: "pct", kind: "sequential", group: "Rents and affordability", source: "acs", periods: YEARS, dateId: "gross_rent",
     valueAt: (m, p) => { const rent = fieldAt(m, p, "gross_rent"); return divide(rent === null ? null : rent * 12, fieldAt(m, p, "income")); } },
   field("fmr_2br", "Fair market rent, two bedroom", "usd", "sequential", "Rents and affordability", "hud", ALL),
   field("income", "Median household income", "usd", "sequential", "Rents and affordability", "census", YEARS),
@@ -148,7 +155,7 @@ export const DEFS: MetricDef[] = [
   field("own_rate", "Homeownership rate", "pct", "sequential", "People and migration", "census", YEARS),
   // supply
   field("permits_units", "Housing units permitted", "int", "sequential", "Supply", "bps", ALL),
-  { id: "permits_per_1000", label: "Units permitted per 1,000 residents", format: "per_1000", kind: "sequential", group: "Supply", source: "bps", periods: ALL,
+  { id: "permits_per_1000", label: "Units permitted per 1,000 residents", format: "per_1000", kind: "sequential", group: "Supply", source: "bps", periods: ALL, dateId: "permits_units",
     valueAt: (m, p) => { const units = fieldAt(m, p, "permits_units"); return divide(units === null ? null : units * 1000, fieldAt(m, p, "pop_estimate")); } },
   field("permits_single_family", "Single family units permitted", "int", "sequential", "Supply", "bps", ALL),
   field("permits_multifamily", "Units in 5+ unit buildings permitted", "int", "sequential", "Supply", "bps", ALL),
@@ -180,7 +187,7 @@ export function resolveMetric(def: MetricDef, period: Period | null): Metric {
     group: def.group,
     source: def.source,
     accessor: (m) => def.valueAt(m, p),
-    dateOf: (m) => dateAt(m, p, def.id),
+    dateOf: (m) => defDate(def, m, p),
   };
 }
 

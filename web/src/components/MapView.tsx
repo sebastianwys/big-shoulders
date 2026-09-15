@@ -5,6 +5,7 @@ import { formatValue } from "../lib/format";
 import type { Metric } from "../lib/metrics";
 import { INK, NULL_GRAY, SURFACE } from "../lib/palette";
 import type { ColorScale } from "../lib/scale";
+import { periodLabel } from "../lib/timeline";
 import type { Metro } from "../types";
 import { studyShapes, type BoundaryIndex, type MapMode } from "../lib/boundaries";
 import { ShapeLayer } from "./ShapeLayer";
@@ -81,8 +82,9 @@ export function MapView({ metros, metric, scale, selectedCbsa, onSelect, mode, b
             eventHandlers={{ click: () => onSelect(m.cbsa) }}
           >
             <Tooltip className="bs-tip" direction="top" offset={[0, -6]}>
+              <span className="tn">{m.name}</span>{" "}
               <span className="tv">{formatValue(value, metric.format, signed)}</span>{" "}
-              <span className="tn">{m.name}</span>
+              <span className="tp">{periodLabel(metric, m)}</span>
             </Tooltip>
           </CircleMarker>
         );

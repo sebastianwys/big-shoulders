@@ -104,7 +104,7 @@ export function App() {
             boundaries={boundaries}
           />
           <Legend scale={scale} metric={metric} caption={caption} />
-          {selectedMetro && <DetailPanel metro={selectedMetro} onClose={() => setSelected(null)} />}
+          {selectedMetro && <DetailPanel metro={selectedMetro} metros={metros} onClose={() => setSelected(null)} />}
         </div>
       </div>
     </div>
