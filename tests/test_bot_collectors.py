@@ -100,7 +100,7 @@ class TestBls(unittest.TestCase):
         self.assertEqual(bls.primary_state("San Juan-Bayamon-Caguas, PR Metro Area"), "PR")
         self.assertEqual(bls.primary_state("Aberdeen, SD Micro Area"), "SD")
 
-    def test_parse_keeps_annual_and_newest_month(self):
+    def test_parse_keeps_every_month_and_the_annual_average(self):
         series = [{"seriesID": "LAUMT481018000000003", "data": [
             {"year": "2024", "period": "M13", "value": "3.4"},
             {"year": "2024", "period": "M12", "value": "3.1"},
@@ -108,10 +108,11 @@ class TestBls(unittest.TestCase):
             {"year": "2025", "period": "M02", "value": "3.9"},
         ]}]
         df = bls.parse_series(series)
-        self.assertEqual(df.cbsa_code.tolist(), ["10180", "10180"])
+        self.assertEqual(df.cbsa_code.tolist(), ["10180"] * 4)
         self.assertEqual(df[df.period == "M13"].value.iloc[0], 3.4)
-        newest = df[df.period != "M13"].iloc[0]
-        self.assertEqual((newest.year, newest.period, newest.value), (2025, "M03", 3.7))
+        months = df[df.period != "M13"].sort_values(["year", "period"])
+        self.assertEqual(months.period.tolist(), ["M12", "M02", "M03"])
+        self.assertEqual(months.value.tolist(), [3.1, 3.9, 3.7])
 
     def test_parse_empty_series(self):
         df = bls.parse_series([{"seriesID": "LAUMT481018000000003", "data": []}])
@@ -132,17 +133,17 @@ class TestBls(unittest.TestCase):
         ]}])
         self.assertEqual(df.period.tolist(), ["M13", "M13"])
 
-    # the newest month can sit in the same year as the last annual average
-    def test_newest_month_when_months_stop_mid_year(self):
+    # every month stays, and sorting by year then period finds the newest
+    def test_months_keep_their_order_when_they_stop_mid_year(self):
         df = bls.parse_series([{"seriesID": "LAUMT481018000000003", "data": [
             {"year": "2024", "period": "M13", "value": "3.4"},
             {"year": "2024", "period": "M06", "value": "3.2"},
             {"year": "2024", "period": "M05", "value": "3.0"},
             {"year": "2023", "period": "M12", "value": "2.9"},
         ]}])
-        newest = df[df.period != "M13"]
-        self.assertEqual(len(newest), 1)
-        self.assertEqual((newest.year.iloc[0], newest.period.iloc[0]), (2024, "M06"))
+        months = df[df.period != "M13"].sort_values(["year", "period"])
+        self.assertEqual(len(months), 3)
+        self.assertEqual((months.year.iloc[-1], months.period.iloc[-1]), (2024, "M06"))
 
     def test_multiple_series_keep_their_own_cbsa_codes(self):
         df = bls.parse_series([

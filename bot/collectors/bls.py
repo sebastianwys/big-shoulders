@@ -44,15 +44,13 @@ def series_id(cbsa_code, state_abbr, division=False):
     return f"LAU{area_type}{STATE_FIPS[state_abbr]}{cbsa_code}000000{MEASURE}"
 
 
-# keep the annual averages plus the newest monthly value per series
+# keep every month and the annual average (period M13) per series. the map
+# reads the annual average per year and the newest month, the forecasting
+# panel averages the months into quarters
 def parse_series(series):
     rows = []
     for item in series:
-        data = item.get("data", [])
-        monthly = [d for d in data if d["period"] != "M13"]
-        newest = max(monthly, key=lambda d: (d["year"], d["period"]), default=None)
-        keep = [d for d in data if d["period"] == "M13"] + ([newest] if newest else [])
-        for d in keep:
+        for d in item.get("data", []):
             rows.append({
                 "series_id": item["seriesID"],
                 "cbsa_code": item["seriesID"][7:12],
@@ -108,7 +106,7 @@ def collect():
     write_manifest(OUT_DIR, [manifest_entry(
         OUT_FILE, API, "U.S. Bureau of Labor Statistics",
         "Local Area Unemployment Statistics, metropolitan area unemployment rate, not seasonally adjusted",
-        f"{start_year} onward, annual averages plus newest month", len(df),
+        f"{start_year} onward, every month plus annual averages", len(df),
         {"series_requested": len(ids), "series_missing": len(missing), "keyed": bool(key)},
     )])
     print(f"[bls] {df['series_id'].nunique()} of {len(ids)} series, {len(missing)} missing -> {OUT_FILE.name}")
