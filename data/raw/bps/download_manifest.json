@@ -14,7 +14,7 @@
       "row_count": 17040
     },
     "version": "2014 to 2025 annual",
-    "downloaded_at": "2026-09-15T16:42:53Z",
+    "downloaded_at": "2026-09-15T17:17:04Z",
     "notes": {
       "years": [
         2014,
@@ -58,7 +58,7 @@
       "row_count": 381
     },
     "version": "2014 annual",
-    "downloaded_at": "2026-09-15T16:42:50Z"
+    "downloaded_at": "2026-09-15T17:17:01Z"
   },
   {
     "filename": "ma2015a.txt",
@@ -75,7 +75,7 @@
       "row_count": 381
     },
     "version": "2015 annual",
-    "downloaded_at": "2026-09-15T16:42:50Z"
+    "downloaded_at": "2026-09-15T17:17:01Z"
   },
   {
     "filename": "ma2016a.txt",
@@ -92,7 +92,7 @@
       "row_count": 382
     },
     "version": "2016 annual",
-    "downloaded_at": "2026-09-15T16:42:50Z"
+    "downloaded_at": "2026-09-15T17:17:02Z"
   },
   {
     "filename": "ma2017a.txt",
@@ -109,7 +109,7 @@
       "row_count": 382
     },
     "version": "2017 annual",
-    "downloaded_at": "2026-09-15T16:42:50Z"
+    "downloaded_at": "2026-09-15T17:17:02Z"
   },
   {
     "filename": "ma2018a.txt",
@@ -126,7 +126,7 @@
       "row_count": 382
     },
     "version": "2018 annual",
-    "downloaded_at": "2026-09-15T16:42:50Z"
+    "downloaded_at": "2026-09-15T17:17:03Z"
   },
   {
     "filename": "ma2019a.txt",
@@ -143,7 +143,7 @@
       "row_count": 384
     },
     "version": "2019 annual",
-    "downloaded_at": "2026-09-15T16:42:50Z"
+    "downloaded_at": "2026-09-15T17:17:03Z"
   },
   {
     "filename": "ma2020a.txt",
@@ -160,7 +160,7 @@
       "row_count": 384
     },
     "version": "2020 annual",
-    "downloaded_at": "2026-09-15T16:42:51Z"
+    "downloaded_at": "2026-09-15T17:17:03Z"
   },
   {
     "filename": "ma2021a.txt",
@@ -177,7 +177,7 @@
       "row_count": 384
     },
     "version": "2021 annual",
-    "downloaded_at": "2026-09-15T16:42:51Z"
+    "downloaded_at": "2026-09-15T17:17:03Z"
   },
   {
     "filename": "ma2022a.txt",
@@ -194,7 +194,7 @@
       "row_count": 384
     },
     "version": "2022 annual",
-    "downloaded_at": "2026-09-15T16:42:51Z"
+    "downloaded_at": "2026-09-15T17:17:03Z"
   },
   {
     "filename": "ma2023a.txt",
@@ -211,7 +211,7 @@
       "row_count": 384
     },
     "version": "2023 annual",
-    "downloaded_at": "2026-09-15T16:42:52Z"
+    "downloaded_at": "2026-09-15T17:17:03Z"
   },
   {
     "filename": "cbsa2024a.txt",
@@ -228,7 +228,7 @@
       "row_count": 921
     },
     "version": "2024 annual",
-    "downloaded_at": "2026-09-15T16:42:52Z"
+    "downloaded_at": "2026-09-15T17:17:03Z"
   },
   {
     "filename": "cbsa2025a.txt",
@@ -245,6 +245,6 @@
       "row_count": 931
     },
     "version": "2025 annual",
-    "downloaded_at": "2026-09-15T16:42:53Z"
+    "downloaded_at": "2026-09-15T17:17:04Z"
   }
 ]
