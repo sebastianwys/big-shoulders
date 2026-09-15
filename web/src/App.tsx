@@ -74,7 +74,7 @@ export function App() {
 
   return (
     <div className="app">
-      <Header rate={loaded.data.national?.mortgage_rate ?? null} sample={loaded.sample} />
+      <Header rate={loaded.data.national?.mortgage_rate ?? null} sample={loaded.sample} count={loaded.data.metros.length} />
       <div className="main">
         <Sidebar
           metros={metros}

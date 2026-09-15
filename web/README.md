@@ -1,4 +1,4 @@
-# Big Shoulders map
+# The Loop map
 
 A static map of the 373 metros in the study. Each marker is one metro, sized by
 2024 population and colored by the selected metric. Click a marker or a ranked

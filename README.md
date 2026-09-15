@@ -1,8 +1,8 @@
-# Project Big Shoulders
+# The Loop
 
 Housing affordability trend analysis. I integrate the FHFA House Price Index with U.S. Census ACS demographic and economic indicators across U.S. metropolitan areas.
 
-This started as my IS477 final project at the University of Illinois. The pipeline in the repository root is that project, tagged `final-project`. The modeling work that builds on it lives in `ml/` and is in progress.
+This started as my IS477 final project at the University of Illinois, Project Big Shoulders. The pipeline in the repository root is that project, tagged `final-project`. The modeling work that builds on it lives in `ml/` and is in progress.
 
 ## The Contributors
 
@@ -147,7 +147,7 @@ This is how the two datasets connect.
 This project uses a tabular data model. Raw and integrated datasets are CSV. JSON manifests track integrity and provenance. PNG files store visualizations. CSV is human-readable, version-controllable, and works directly with pandas. The dataset is small enough that no relational database is needed. Per-source folders keep raw files separated from derived files.
 
 ```
-big-shoulders/
+the-loop/
 |-- scripts/                     acquisition + integration scripts
 |-- data/
 |   |-- raw/
@@ -299,7 +299,7 @@ The fifth challenge was the missing big metros. FHFA publishes the 13 largest me
 Set up the environment first.
 
 ```bash
-cd big-shoulders
+cd the-loop
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt

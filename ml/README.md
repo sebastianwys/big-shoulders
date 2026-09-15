@@ -33,7 +33,7 @@ python3.12 -m venv .venv
 ## Layout
 
 ```
-src/big_shoulders/   package code
+src/the_loop/   package code
 tests/               unittest suite, run with run_tests.py
 notebooks/           exploration
 models/              trained artifacts (gitignored)
