@@ -356,6 +356,8 @@ To verify integrity, compare your computed SHA-256 hashes against the committed 
 
 `web/` is a React and Leaflet map of the 410 metros and divisions: dots sized by population or Census boundary shapes, colored by any metric for 2014, 2019, 2024 or the latest reading, with a detail panel per metro. It is static, reads the committed JSON, and deploys to Cloudflare from the `web` directory. Settings are in `web/README.md`.
 
+The map also carries a Forecasts group: expected growth of the house price index over the next four and eight quarters with 90 percent bands, the five year trend and a surprise measure, from a PyTorch sequence model trained on a quarterly panel of every metro since 1975 and judged on a held out 2022 to 2026 block against five classical rules. The build, its evaluation design and every step figure are in `ml/README.md`.
+
 ## The References
 
 ### Datasets

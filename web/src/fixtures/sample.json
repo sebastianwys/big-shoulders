@@ -15,7 +15,8 @@
     "irs": "through 2022-2023",
     "pep": "vintage 2025, annual 2010 to 2025",
     "realtor": "through 2026-08",
-    "zillow_extras": "through 2026-07-31"
+    "zillow_extras": "through 2026-07-31",
+    "forecast": "gru, origin 2026Q2"
   },
   "national": {
     "mortgage_rate": {
@@ -188,7 +189,25 @@
         "price_cut_share": 0.2148,
         "price_cut_share_date": "2026-07",
         "zhvf_forecast": 2.3,
-        "zhvf_forecast_date": "2026-07"
+        "zhvf_forecast_date": "2026-07",
+        "hpi_forecast_4q": 3.1,
+        "hpi_forecast_4q_date": "2026-06",
+        "hpi_forecast_4q_lo": -1.2,
+        "hpi_forecast_4q_lo_date": "2026-06",
+        "hpi_forecast_4q_hi": 7.0,
+        "hpi_forecast_4q_hi_date": "2026-06",
+        "hpi_forecast_8q": 6.0,
+        "hpi_forecast_8q_date": "2026-06",
+        "hpi_forecast_8q_lo": -2.5,
+        "hpi_forecast_8q_lo_date": "2026-06",
+        "hpi_forecast_8q_hi": 14.2,
+        "hpi_forecast_8q_hi_date": "2026-06",
+        "hpi_yoy_latest": 2.0,
+        "hpi_yoy_latest_date": "2026-06",
+        "hpi_trend_5y": 5.4,
+        "hpi_trend_5y_date": "2026-06",
+        "hpi_surprise_4q": -1.1,
+        "hpi_surprise_4q_date": "2026-06"
       },
       "growth": {
         "hpi_14_19": 0.2081,
@@ -360,7 +379,25 @@
         "price_cut_share": 0.29,
         "price_cut_share_date": "2026-07",
         "zhvf_forecast": -0.4,
-        "zhvf_forecast_date": "2026-07"
+        "zhvf_forecast_date": "2026-07",
+        "hpi_forecast_4q": -0.8,
+        "hpi_forecast_4q_date": "2026-06",
+        "hpi_forecast_4q_lo": -5.0,
+        "hpi_forecast_4q_lo_date": "2026-06",
+        "hpi_forecast_4q_hi": 3.6,
+        "hpi_forecast_4q_hi_date": "2026-06",
+        "hpi_forecast_8q": 1.5,
+        "hpi_forecast_8q_date": "2026-06",
+        "hpi_forecast_8q_lo": -6.2,
+        "hpi_forecast_8q_lo_date": "2026-06",
+        "hpi_forecast_8q_hi": 9.4,
+        "hpi_forecast_8q_hi_date": "2026-06",
+        "hpi_yoy_latest": -1.9,
+        "hpi_yoy_latest_date": "2026-06",
+        "hpi_trend_5y": 6.1,
+        "hpi_trend_5y_date": "2026-06",
+        "hpi_surprise_4q": -3.2,
+        "hpi_surprise_4q_date": "2026-06"
       },
       "growth": {
         "hpi_14_19": 0.3997,

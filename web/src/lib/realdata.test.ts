@@ -40,9 +40,10 @@ describe.skipIf(!present)("built metros.json", () => {
     }
   });
 
+  // bea and hud wait on a key, the forecast on an export run of the model
   it("hides only the sources that have not been collected", () => {
     const hidden = DEFS.filter((d) => !visibleDefs(data!.metros).includes(d)).map((d) => d.source);
-    for (const source of hidden) expect(["bea", "hud"]).toContain(source);
+    for (const source of hidden) expect(["bea", "hud", "forecast"]).toContain(source);
   });
 
   it("ranks the core metric across most metros", () => {

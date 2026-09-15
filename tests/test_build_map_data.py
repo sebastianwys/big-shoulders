@@ -67,6 +67,12 @@ BLS = pd.DataFrame({
     "value": [3.5, 3.4, 3.7, 3.9],
 })
 
+FORECAST_ROWS = [
+    "10180,hpi_forecast_4q,2026-06,3.1", "10180,hpi_forecast_4q_lo,2026-06,-1.2", "10180,hpi_forecast_4q_hi,2026-06,7.0",
+    "10180,hpi_forecast_8q,2026-06,6.0", "10180,hpi_forecast_8q_lo,2026-06,-2.5", "10180,hpi_forecast_8q_hi,2026-06,14.2",
+    "10180,hpi_yoy_latest,2026-06,2.0", "10180,hpi_trend_5y,2026-06,5.4", "10180,hpi_surprise_4q,2026-06,-1.1",
+]
+
 FRED = pd.DataFrame({
     "date": ["2014-01-02", "2014-01-09", "2019-01-03", "2024-01-04", "2024-01-11", "2026-09-10", "2026-09-17"],
     "value": [4.5, 4.3, 4.0, 6.6, 6.8, 6.76, None],
@@ -76,8 +82,10 @@ FRED = pd.DataFrame({
 def write_fixtures(folder):
     folder = Path(folder)
     paths = {
-        # keep the build away from the real data/raw enrichment files
+        # keep the build away from the real data/raw enrichment files and
+        # from a real forecast export under ml/results
         "enrichment_dir": folder,
+        "forecast_dir": folder / "forecast",
         "merged": folder / "merged.csv",
         "centroids": folder / "centroids.csv",
         "zhvi": folder / "zhvi.csv",
@@ -157,6 +165,25 @@ class TestBaseCases(BuildCase):
             "gazetteer": "2024 Gazetteer", "zillow": "through 2026-07-31",
             "bls": "2019 onward", "fred": "through 2026-09-10",
         })
+
+    # the model's export is found at the fixture's second root, lands in latest
+    # under its origin month and names its version in the sources block
+    def test_forecast_export_lands_in_latest_with_its_manifest_version(self):
+        folder = Path(self.paths["forecast_dir"])
+        folder.mkdir()
+        (folder / "metrics.csv").write_text("cbsa_code,metric,period,value\n" + "\n".join(FORECAST_ROWS) + "\n")
+        (folder / "download_manifest.json").write_text(json.dumps([{"version": "gru, origin 2026Q2"}]))
+        payload = self.build()
+        self.assertEqual(payload["sources"]["forecast"], "gru, origin 2026Q2")
+        self.assertEqual(payload["sources"]["fred"], "through 2026-09-10")
+        abilene = self.metro(payload, "10180")
+        self.assertEqual((abilene["latest"]["hpi_forecast_4q"], abilene["latest"]["hpi_forecast_4q_date"]), (3.1, "2026-06"))
+        self.assertEqual((abilene["latest"]["hpi_forecast_8q_hi"], abilene["latest"]["hpi_surprise_4q"]), (14.2, -1.1))
+        self.assertIsNone(abilene["years"]["2024"]["hpi_forecast_4q"])
+        # a metro without forecast rows carries the keys with nulls
+        chicago = self.metro(payload, "16980")
+        self.assertIsNone(chicago["latest"]["hpi_forecast_4q"])
+        self.assertIsNone(chicago["latest"]["hpi_forecast_4q_date"])
 
 
 class TestEdgeCases(BuildCase):
@@ -448,3 +475,25 @@ class TestEnrichment(unittest.TestCase):
             self.write(tmp, "nomanifest", ["10180,other,2024,1"])
             self.assertEqual(bm.enrichment_version(Path(tmp) / "permits"), "2024 annual")
             self.assertEqual(bm.enrichment_version(Path(tmp) / "nomanifest"), "present")
+
+    # the model's export lives under ml/results, not data/raw. its folder is a
+    # root of its own, named like a collector folder, after the raw sources
+    def test_forecast_folder_is_discovered_beside_the_raw_sources(self):
+        merged, centroids = self.frames()
+        self.assertFalse({row.split(",")[1] for row in FORECAST_ROWS} & bm.RESERVED)
+        with tempfile.TemporaryDirectory() as raw, tempfile.TemporaryDirectory() as results:
+            self.write(raw, "permits", ["10180,permits,2024,850"])
+            forecast = self.write(results, "forecast", FORECAST_ROWS)
+            enrichments = bm.discover_enrichments(raw, forecast)
+            self.assertEqual([e["name"] for e in enrichments], ["permits", "forecast"])
+            self.assertEqual(enrichments[1]["folder"], forecast)
+            self.assertEqual(len(enrichments[1]["metrics"]), 9)
+            # a root that has not been exported yet is simply absent
+            self.assertEqual([e["name"] for e in bm.discover_enrichments(raw, Path(raw) / "nothing")], ["permits"])
+            metros, _, _ = bm.build_metros(merged, centroids, enrichments=enrichments)
+        abi = next(m for m in metros if m["cbsa"] == "10180")
+        self.assertEqual((abi["latest"]["hpi_forecast_4q"], abi["latest"]["hpi_forecast_4q_date"]), (3.1, "2026-06"))
+        self.assertEqual((abi["latest"]["hpi_trend_5y"], abi["latest"]["hpi_yoy_latest"]), (5.4, 2.0))
+        self.assertEqual(abi["years"]["2024"]["permits"], 850.0)
+        # a monthly period is latest only, never a year panel
+        self.assertIsNone(abi["years"]["2024"]["hpi_forecast_4q"])

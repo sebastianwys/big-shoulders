@@ -5,10 +5,11 @@ from pathlib import Path
 import pandas as pd
 
 from bot.collectors.gazetteer import YEAR as GAZETTEER_YEAR
-from bot.common import INTEGRATED, RAW_DIR, STUDY_YEARS, WEB_DATA_DIR, utc_now
+from bot.common import BASE_DIR, INTEGRATED, RAW_DIR, STUDY_YEARS, WEB_DATA_DIR, utc_now
 
 DEFAULT_PATHS = {
     "enrichment_dir": RAW_DIR,
+    "forecast_dir": BASE_DIR / "ml" / "results" / "forecast",
     "merged": INTEGRATED,
     "centroids": RAW_DIR / "gazetteer" / "cbsa_centroids.csv",
     "zhvi": RAW_DIR / "zillow" / "zhvi_metro.csv",
@@ -208,7 +209,7 @@ RESERVED = {"hpi", "income", "pop", "age", "degree_share", "own_rate", "home_val
 # any collector can drop metrics.csv beside its manifest with the columns
 # cbsa_code, metric, period, value. period is yyyy for an annual value or
 # yyyy-mm for a monthly one. annual values land in years[y], the newest period
-# per metric lands in latest with its date
+# per metric lands in latest with its date. the folder names the source
 def load_enrichment(path):
     path = Path(path)
     df = pd.read_csv(path, dtype={"cbsa_code": str, "metric": str, "period": str})
@@ -222,13 +223,18 @@ def load_enrichment(path):
     df = df.dropna(subset=["cbsa_code", "metric", "period", "value"])
     return {
         "name": path.parent.name,
+        "folder": path.parent,
         "metrics": sorted(df["metric"].unique()),
         "groups": {code: sub for code, sub in df.groupby("cbsa_code")},
     }
 
 
-def discover_enrichments(raw_dir):
-    return [load_enrichment(p) for p in sorted(Path(raw_dir).glob("*/metrics.csv"))]
+# the raw folder holds one subfolder per collector. any extra path is a source
+# folder on its own, the model's export under ml/results, skipped until it exists
+def discover_enrichments(raw_dir, *folders):
+    files = sorted(Path(raw_dir).glob("*/metrics.csv"))
+    files += [Path(f) / "metrics.csv" for f in folders if (Path(f) / "metrics.csv").exists()]
+    return [load_enrichment(p) for p in files]
 
 
 # the version string from a source's manifest, for the sources block
@@ -409,7 +415,7 @@ def build(out_path=None, paths=None):
     zori = optional(p["zori"], load_zillow, "zillow zori")
     bls_frame = optional(p["bls"], load_bls, "bls")
     fred_frame = optional(p["fred"], load_fred, "fred")
-    enrichments = discover_enrichments(p["enrichment_dir"])
+    enrichments = discover_enrichments(p["enrichment_dir"], p["forecast_dir"])
 
     metros, dropped, unmatched = build_metros(merged, centroids, zhvi, zori, bls_frame, enrichments)
 
@@ -421,7 +427,7 @@ def build(out_path=None, paths=None):
             "zillow": zillow_version(zhvi),
             "bls": bls_version(bls_frame),
             "fred": fred_version(fred_frame),
-            **{e["name"]: enrichment_version(Path(p["enrichment_dir"]) / e["name"]) for e in enrichments},
+            **{e["name"]: enrichment_version(e["folder"]) for e in enrichments},
         },
         "national": national_block(fred_frame),
         "metros": metros,

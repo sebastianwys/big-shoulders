@@ -1,4 +1,5 @@
 import { geoNote, parentMetricsNote } from "../lib/geo";
+import { forecastCaption, forecastLines } from "../lib/forecast";
 import { formatValue } from "../lib/format";
 import { DEFS, GROUPS, dateAt, type MetricDef } from "../lib/metrics";
 import type { Growth, Metro, YearKey } from "../types";
@@ -22,9 +23,10 @@ export function yearRows(metro: Metro, group: string): MetricDef[] {
   );
 }
 
-// definitions with a latest value for this metro
+// definitions with a latest value for this metro. the forecasts have a
+// section of their own, with the bands
 export function latestRows(metro: Metro): MetricDef[] {
-  return DEFS.filter((d) => d.periods.includes("latest") && d.valueAt(metro, "latest") !== null);
+  return DEFS.filter((d) => d.group !== "Forecasts" && d.periods.includes("latest") && d.valueAt(metro, "latest") !== null);
 }
 
 interface Props {
@@ -35,6 +37,7 @@ interface Props {
 export function DetailPanel({ metro, onClose }: Props) {
   const hpi = YEARS.map((y) => metro.years?.[y]?.hpi ?? null);
   const latest = latestRows(metro);
+  const forecasts = forecastLines(metro);
   const inherited = parentMetricsNote(metro);
 
   return (
@@ -89,6 +92,23 @@ export function DetailPanel({ metro, onClose }: Props) {
           ))}
         </tbody>
       </table>
+
+      {forecasts.length > 0 && (
+        <>
+          <h3>Forecasts</h3>
+          <table>
+            <tbody>
+              {forecasts.map((line) => (
+                <tr key={line.id}>
+                  <td>{line.label}</td>
+                  <td>{line.text}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="geo-note">{forecastCaption(metro)}</p>
+        </>
+      )}
 
       {latest.length > 0 && (
         <>

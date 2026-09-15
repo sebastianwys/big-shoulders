@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  DEFS, METRICS, PERIODS, availablePeriods, defById, labelFor, metricById, metricCaption, nearestPeriod, num,
-  resolveMetric, visibleDefs,
+  DEFS, GROUPS, METRICS, PERIODS, availablePeriods, defById, defaultPeriod, labelFor, metricById, metricCaption,
+  nearestPeriod, num, resolveMetric, visibleDefs,
 } from "./metrics";
 import type { Metro, Period } from "../types";
 import { SAMPLE } from "./data";
@@ -132,5 +132,48 @@ describe("captions and labels", () => {
   it("map a field key to its label and pass unknown keys through", () => {
     expect(labelFor("permits_units")).toBe("Housing units permitted");
     expect(labelFor("mystery")).toBe("mystery");
+  });
+});
+
+describe("forecasts", () => {
+  const ids = ["hpi_forecast_4q", "hpi_forecast_8q", "hpi_trend_5y", "hpi_yoy_latest", "hpi_surprise_4q"];
+
+  it("form the last group, from the model, read at latest only", () => {
+    expect(GROUPS[GROUPS.length - 1]).toBe("Forecasts");
+    expect(DEFS.filter((d) => d.group === "Forecasts").map((d) => d.id)).toEqual(ids);
+    for (const id of ids) {
+      expect(def(id).source).toBe("forecast");
+      expect(def(id).periods).toEqual(["latest"]);
+      expect(def(id).kind).toBe("diverging");
+      expect(defaultPeriod(def(id))).toBe("latest");
+      expect(resolveMetric(def(id), "2019").period).toBe("latest");
+      expect(resolveMetric(def(id), null).id).toBe(`${id}_latest`);
+    }
+    expect(labelFor("hpi_forecast_4q")).toBe("Expected HPI growth, next 4 quarters");
+    expect(labelFor("hpi_forecast_8q")).toBe("Expected HPI growth, next 8 quarters");
+    expect(labelFor("hpi_trend_5y")).toBe("HPI growth, 5 year annualized");
+    expect(labelFor("hpi_yoy_latest")).toBe("HPI growth, last 4 quarters");
+    expect(labelFor("hpi_surprise_4q")).toBe("Surprise, actual minus expected, last 4 quarters");
+  });
+
+  it("appear in the menu only when the data carries them", () => {
+    expect(visibleDefs(SAMPLE.metros).filter((d) => d.group === "Forecasts").map((d) => d.id)).toEqual(ids);
+    expect(visibleDefs([sparse]).some((d) => d.group === "Forecasts")).toBe(false);
+    expect(availablePeriods(def("hpi_forecast_4q"), SAMPLE.metros)).toEqual(["latest"]);
+    expect(availablePeriods(def("hpi_forecast_4q"), [sparse])).toEqual([]);
+  });
+
+  it("read percent values from latest and never from a year panel", () => {
+    expect(def("hpi_forecast_4q").valueAt(abilene, "latest")).toBe(3.1);
+    expect(def("hpi_surprise_4q").valueAt(dallas, "latest")).toBe(-3.2);
+    expect(def("hpi_trend_5y").valueAt(sparse, "latest")).toBeNull();
+    expect(def("hpi_forecast_4q").valueAt(abilene, "2024")).toBeNull();
+    expect(metricById("hpi_forecast_8q_latest").accessor(dallas)).toBe(1.5);
+  });
+
+  it("caption the model with the origin month", () => {
+    expect(metricCaption(resolveMetric(def("hpi_forecast_4q"), "latest"), SAMPLE.metros)).toBe("Source: The Loop model, latest 2026-06");
+    expect(metricCaption(resolveMetric(def("hpi_surprise_4q"), "latest"), [sparse])).toBe("Source: The Loop model, latest");
+    expect(resolveMetric(def("hpi_forecast_4q"), "latest").dateOf(abilene)).toBe("2026-06");
   });
 });

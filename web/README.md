@@ -21,11 +21,22 @@ divisions and simplifying them with mapshaper, a one-off tool installed for that
 only when Shapes is first chosen.
 
 The metric menu is grouped (House prices, Housing market, Rents and
-affordability, People and migration, Supply) and only lists metrics the built
+affordability, People and migration, Supply, Forecasts) and only lists metrics the built
 json actually carries, so a source without a key yet stays hidden. The "as of"
 control picks the panel a metric is read at: 2014, 2019, 2024 or the source's
 latest month or year, with periods the metric lacks disabled and change figures
 like HPI growth having none. The legend caption names the source and date.
+
+Forecasts is the last group. It colors the map by the model's expected HPI
+growth over the next four and eight quarters, the realized growth over the
+last four quarters and the last five years annualized, and the surprise,
+actual minus expected, for the four quarters just ended. The detail panel
+adds the 90 percent band to each expected growth line. The numbers come from
+`ml/results/forecast/metrics.csv`, written by `python -m the_loop.export`
+from the model's forecasts and the panel, which the bot picks up beside the
+collected sources. A monthly bot run carries the last exported forecast
+until the model is rerun, so the caption date is the forecast origin, not
+the run date.
 
 Cloudflare, Workers flow (Workers and Pages, Create, import the repository):
 root directory `web`, build command `npm ci && npm run build`, deploy command

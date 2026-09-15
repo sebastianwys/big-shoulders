@@ -2,11 +2,11 @@ import type { Growth, Metro, Period, YearKey, YearValues } from "../types";
 
 export type ScaleKind = "sequential" | "diverging";
 export type ValueFormat = "pct" | "usd" | "usd_k" | "ratio" | "rate" | "int" | "index" | "days" | "minutes" | "per_1000";
-export type Group = "House prices" | "Housing market" | "Rents and affordability" | "People and migration" | "Supply";
-export type Source = "fhfa" | "census" | "bls" | "zillow" | "fred" | "acs" | "pep" | "bps" | "irs" | "realtor" | "bea" | "hud";
+export type Group = "House prices" | "Housing market" | "Rents and affordability" | "People and migration" | "Supply" | "Forecasts";
+export type Source = "fhfa" | "census" | "bls" | "zillow" | "fred" | "acs" | "pep" | "bps" | "irs" | "realtor" | "bea" | "hud" | "forecast";
 
 export const PERIODS: Period[] = ["2014", "2019", "2024", "latest"];
-export const GROUPS: Group[] = ["House prices", "Housing market", "Rents and affordability", "People and migration", "Supply"];
+export const GROUPS: Group[] = ["House prices", "Housing market", "Rents and affordability", "People and migration", "Supply", "Forecasts"];
 
 export const SOURCE_LABEL: Record<Source, string> = {
   fhfa: "FHFA",
@@ -21,6 +21,7 @@ export const SOURCE_LABEL: Record<Source, string> = {
   realtor: "Realtor.com",
   bea: "BEA",
   hud: "HUD",
+  forecast: "The Loop model",
 };
 
 // a metric definition. periods lists the panels it can be read at; an empty
@@ -152,6 +153,13 @@ export const DEFS: MetricDef[] = [
   field("permits_single_family", "Single family units permitted", "int", "sequential", "Supply", "bps", ALL),
   field("permits_multifamily", "Units in 5+ unit buildings permitted", "int", "sequential", "Supply", "bps", ALL),
   field("vacancy_rate", "Vacant housing units", "pct", "sequential", "Supply", "acs", YEARS),
+  // forecasts. the export writes percent at the origin quarter, so these
+  // read as rates like the zillow forecast, signed either way
+  field("hpi_forecast_4q", "Expected HPI growth, next 4 quarters", "rate", "diverging", "Forecasts", "forecast", ["latest"]),
+  field("hpi_forecast_8q", "Expected HPI growth, next 8 quarters", "rate", "diverging", "Forecasts", "forecast", ["latest"]),
+  field("hpi_trend_5y", "HPI growth, 5 year annualized", "rate", "diverging", "Forecasts", "forecast", ["latest"]),
+  field("hpi_yoy_latest", "HPI growth, last 4 quarters", "rate", "diverging", "Forecasts", "forecast", ["latest"]),
+  field("hpi_surprise_4q", "Surprise, actual minus expected, last 4 quarters", "rate", "diverging", "Forecasts", "forecast", ["latest"]),
 ];
 
 export function defaultPeriod(def: MetricDef): Period | null {

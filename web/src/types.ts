@@ -23,7 +23,12 @@ export type EnrichmentKey =
   | "bea_income_per_capita" | "bea_personal_income"
   | "bea_population"
   // hud, once a token is configured
-  | "fmr_2br" | "median_family_income";
+  | "fmr_2br" | "median_family_income"
+  // the loop model, written by the_loop.export, percent at the origin quarter.
+  // each expected growth carries its 90 percent band as _lo and _hi
+  | "hpi_forecast_4q" | "hpi_forecast_4q_lo" | "hpi_forecast_4q_hi"
+  | "hpi_forecast_8q" | "hpi_forecast_8q_lo" | "hpi_forecast_8q_hi"
+  | "hpi_yoy_latest" | "hpi_trend_5y" | "hpi_surprise_4q";
 
 export type EnrichmentValues = { [K in EnrichmentKey]?: number | null };
 export type EnrichmentDates = { [K in EnrichmentKey as `${K}_date`]?: string | null };
