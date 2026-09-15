@@ -14,7 +14,7 @@
       "row_count": 23565
     },
     "version": "through 2026-07-31",
-    "downloaded_at": "2026-09-15T17:17:24Z",
+    "downloaded_at": "2026-09-15T19:54:05Z",
     "notes": {
       "attribution": "Data provided by Zillow Research (zillow.com/research/data). Zillow terms of use apply.",
       "processing": "raw csvs read in memory and not kept, names mapped to cbsa codes through the gazetteer",
