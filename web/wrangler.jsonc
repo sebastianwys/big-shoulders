@@ -3,6 +3,8 @@
 {
   "name": "big-shoulders-map",
   "compatibility_date": "2026-09-14",
+  // keep the workers.dev address on so the map has a public url after every deploy
+  "workers_dev": true,
   "assets": {
     "directory": "./dist"
   }
