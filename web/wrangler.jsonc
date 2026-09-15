@@ -1,7 +1,7 @@
 // cloudflare workers config for the static map. assets only, no script.
 // the git-connected build runs `npm ci && npm run build` then `npx wrangler deploy`
 {
-  "name": "big-shoulders-map",
+  "name": "map",
   "compatibility_date": "2026-09-14",
   // keep the workers.dev address on so the map has a public url after every deploy
   "workers_dev": true,
