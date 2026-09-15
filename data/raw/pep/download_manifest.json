@@ -1,0 +1,76 @@
+[
+  {
+    "filename": "metrics.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/metro/totals/cbsa-est2025-alldata.csv",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Population Estimates Program metro, micro and division totals with components of change, one row per area, metric and year"
+    },
+    "integrity": {
+      "sha256": "dd330f627bb3e19b002f527ac7280a09f829bd62ec4a8612907f14b38b386416",
+      "size_kb": 2242.8,
+      "row_count": 69034
+    },
+    "version": "vintage 2025, annual 2010 to 2025",
+    "downloaded_at": "2026-09-15T16:42:48Z",
+    "notes": {
+      "metrics": [
+        "pop_estimate",
+        "natural_change",
+        "domestic_migration",
+        "net_migration",
+        "domestic_migration_rate"
+      ],
+      "vintages": {
+        "2019": "https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/metro/totals/cbsa-est2019-alldata.csv",
+        "2025": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/metro/totals/cbsa-est2025-alldata.csv"
+      },
+      "base_years": "the population estimate is kept, the components are skipped because they cover april to june of that year only",
+      "rate": "domestic_migration_rate is domestic_migration per 1,000 of pop_estimate"
+    }
+  },
+  {
+    "filename": "cbsa-est2025-alldata.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/metro/totals/cbsa-est2025-alldata.csv",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Population Estimates Program vintage 2025, metropolitan and micropolitan statistical area totals with components of change"
+    },
+    "integrity": {
+      "sha256": "bf6fad83753456413d047d1acebeb434bd067eba9d6d0be62b3f737ad1301852",
+      "size_kb": 807.9,
+      "row_count": 2806
+    },
+    "version": "vintage 2025, 2020 to 2025",
+    "downloaded_at": "2026-09-15T16:42:48Z",
+    "notes": {
+      "encoding": "latin-1",
+      "area_codes": 962
+    }
+  },
+  {
+    "filename": "cbsa-est2019-alldata.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://www2.census.gov/programs-surveys/popest/datasets/2010-2019/metro/totals/cbsa-est2019-alldata.csv",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Population Estimates Program vintage 2019, metropolitan and micropolitan statistical area totals with components of change"
+    },
+    "integrity": {
+      "sha256": "e43a8296927bb5d482fab0e85a76022e264dba998c366626c6b9021de66809a8",
+      "size_kb": 1239.6,
+      "row_count": 2797
+    },
+    "version": "vintage 2019, 2010 to 2019",
+    "downloaded_at": "2026-09-15T16:42:48Z",
+    "notes": {
+      "encoding": "latin-1",
+      "area_codes": 957
+    }
+  }
+]

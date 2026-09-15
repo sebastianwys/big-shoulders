@@ -1,0 +1,250 @@
+[
+  {
+    "filename": "metrics.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/CBSA%20(beginning%20Jan%202024)/",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "ccbb4d4dcb8aa5043bd41e11f35c865bf6b9c303b90c4a2f92edd86f7adb8f89",
+      "size_kb": 559.2,
+      "row_count": 17040
+    },
+    "version": "2014 to 2025 annual",
+    "downloaded_at": "2026-09-15T16:42:53Z",
+    "notes": {
+      "years": [
+        2014,
+        2025
+      ],
+      "files": [
+        "ma2014a.txt",
+        "ma2015a.txt",
+        "ma2016a.txt",
+        "ma2017a.txt",
+        "ma2018a.txt",
+        "ma2019a.txt",
+        "ma2020a.txt",
+        "ma2021a.txt",
+        "ma2022a.txt",
+        "ma2023a.txt",
+        "cbsa2024a.txt",
+        "cbsa2025a.txt"
+      ],
+      "areas": 939,
+      "metrics": [
+        "permits_units",
+        "permits_single_family",
+        "permits_multifamily"
+      ],
+      "basis": "estimates with imputation. permits_units sums the 1, 2, 3-4 and 5+ unit classes"
+    }
+  },
+  {
+    "filename": "ma2014a.txt",
+    "file_format": "TXT",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/Metro%20(ending%202023)/ma2014a.txt",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "8186439798c4a0cc9e0dec2cf1c49a07504245fc7bdc3744d05f19a133be3ea4",
+      "size_kb": 47.6,
+      "row_count": 381
+    },
+    "version": "2014 annual",
+    "downloaded_at": "2026-09-15T16:42:50Z"
+  },
+  {
+    "filename": "ma2015a.txt",
+    "file_format": "TXT",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/Metro%20(ending%202023)/ma2015a.txt",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "e42edfabf15f475cf714e414f142aaba2d17b6868660892cf40eadf06171893a",
+      "size_kb": 47.8,
+      "row_count": 381
+    },
+    "version": "2015 annual",
+    "downloaded_at": "2026-09-15T16:42:50Z"
+  },
+  {
+    "filename": "ma2016a.txt",
+    "file_format": "TXT",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/Metro%20(ending%202023)/ma2016a.txt",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "35cf1c75c3f47a5272ff1df1f159b6893edac8182ddac3c024ce5a01f5fecf51",
+      "size_kb": 48.1,
+      "row_count": 382
+    },
+    "version": "2016 annual",
+    "downloaded_at": "2026-09-15T16:42:50Z"
+  },
+  {
+    "filename": "ma2017a.txt",
+    "file_format": "TXT",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/Metro%20(ending%202023)/ma2017a.txt",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "f0dc250cef438f18172965ec0f0a0bbf05d1317a2c0319ce90f6e9029aa35d12",
+      "size_kb": 47.8,
+      "row_count": 382
+    },
+    "version": "2017 annual",
+    "downloaded_at": "2026-09-15T16:42:50Z"
+  },
+  {
+    "filename": "ma2018a.txt",
+    "file_format": "TXT",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/Metro%20(ending%202023)/ma2018a.txt",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "25b2b64d0e74caf2a58c51127a726885231854ed78492165c833e56bfd6057dc",
+      "size_kb": 48.1,
+      "row_count": 382
+    },
+    "version": "2018 annual",
+    "downloaded_at": "2026-09-15T16:42:50Z"
+  },
+  {
+    "filename": "ma2019a.txt",
+    "file_format": "TXT",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/Metro%20(ending%202023)/ma2019a.txt",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "8c81e48eab94355e5b6738e8c001a0ae9c3ecb867012edf79f6aec44f88145a1",
+      "size_kb": 48.7,
+      "row_count": 384
+    },
+    "version": "2019 annual",
+    "downloaded_at": "2026-09-15T16:42:50Z"
+  },
+  {
+    "filename": "ma2020a.txt",
+    "file_format": "TXT",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/Metro%20(ending%202023)/ma2020a.txt",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "801c639fe4659d2843cb80d9c19a124423321388c9ad999502ea6cf6da1fdf76",
+      "size_kb": 48.8,
+      "row_count": 384
+    },
+    "version": "2020 annual",
+    "downloaded_at": "2026-09-15T16:42:51Z"
+  },
+  {
+    "filename": "ma2021a.txt",
+    "file_format": "TXT",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/Metro%20(ending%202023)/ma2021a.txt",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "37651576222547e937895e7f6aee8ba2b2f3311ccf63f7f46368c0e68662ca6a",
+      "size_kb": 49.2,
+      "row_count": 384
+    },
+    "version": "2021 annual",
+    "downloaded_at": "2026-09-15T16:42:51Z"
+  },
+  {
+    "filename": "ma2022a.txt",
+    "file_format": "TXT",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/Metro%20(ending%202023)/ma2022a.txt",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "f67746ba73ae053211c54a270eff83ec45a275e3fdcaa4ae9b8743e649861ff4",
+      "size_kb": 49.7,
+      "row_count": 384
+    },
+    "version": "2022 annual",
+    "downloaded_at": "2026-09-15T16:42:51Z"
+  },
+  {
+    "filename": "ma2023a.txt",
+    "file_format": "TXT",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/Metro%20(ending%202023)/ma2023a.txt",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "41e70469eaf17cfd9b2d448c6232954fe91b5588900157d8cb197c89cacac1b0",
+      "size_kb": 49.2,
+      "row_count": 384
+    },
+    "version": "2023 annual",
+    "downloaded_at": "2026-09-15T16:42:52Z"
+  },
+  {
+    "filename": "cbsa2024a.txt",
+    "file_format": "TXT",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/CBSA%20(beginning%20Jan%202024)/cbsa2024a.txt",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "869975722087a727672622cb06a6921de6bad64c51c449daba1e52189c1e9d21",
+      "size_kb": 102.8,
+      "row_count": 921
+    },
+    "version": "2024 annual",
+    "downloaded_at": "2026-09-15T16:42:52Z"
+  },
+  {
+    "filename": "cbsa2025a.txt",
+    "file_format": "TXT",
+    "source": {
+      "endpoint": "https://www2.census.gov/econ/bps/CBSA%20(beginning%20Jan%202024)/cbsa2025a.txt",
+      "provider": "U.S. Census Bureau",
+      "access_method": "Direct HTTP download",
+      "dataset": "Building Permits Survey, new privately owned housing units authorized by building permits, annual, by core based statistical area"
+    },
+    "integrity": {
+      "sha256": "11545b0971bd7d7e4e4724bf6df1fdcaee41b44fc5eb8739b86fbe080bfdcd5e",
+      "size_kb": 103.9,
+      "row_count": 931
+    },
+    "version": "2025 annual",
+    "downloaded_at": "2026-09-15T16:42:53Z"
+  }
+]

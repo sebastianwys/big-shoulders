@@ -97,9 +97,10 @@ def _download(url):
     return response.content
 
 
+# the gazetteer files are utf-8, a few names carry accents
 def _unzip_text(content):
     archive = zipfile.ZipFile(io.BytesIO(content))
-    return archive.read(archive.namelist()[0]).decode("latin-1")
+    return archive.read(archive.namelist()[0]).decode("utf-8", errors="replace")
 
 
 def collect():

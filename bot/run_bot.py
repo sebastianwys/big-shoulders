@@ -1,22 +1,30 @@
 # run every collector, keep going past failures, then rebuild the map data.
 # from the repo root:  python -m bot.run_bot
 
+import importlib
+import pkgutil
 import sys
 
 from bot import build_map_data
-from bot.collectors import bls, fred, gazetteer, zillow
+from bot import collectors as collectors_pkg
 
-COLLECTORS = [
-    ("gazetteer", gazetteer.collect),
-    ("zillow", zillow.collect),
-    ("fred", fred.collect),
-    ("bls", bls.collect),
-]
+
+# every module in bot/collectors with a collect() runs. gazetteer goes first
+# because bls and the build key on its centroids, the rest alphabetically
+def discover():
+    names = sorted(module.name for module in pkgutil.iter_modules(collectors_pkg.__path__))
+    ordered = ["gazetteer"] + [name for name in names if name != "gazetteer"]
+    found = []
+    for name in ordered:
+        module = importlib.import_module(f"bot.collectors.{name}")
+        if callable(getattr(module, "collect", None)):
+            found.append((name, module.collect))
+    return found
 
 
 def main():
     failures = []
-    for name, collect in COLLECTORS:
+    for name, collect in discover():
         try:
             collect()
         except Exception as e:

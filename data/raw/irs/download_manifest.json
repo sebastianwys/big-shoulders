@@ -1,0 +1,173 @@
+[
+  {
+    "filename": "metrics.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://www.irs.gov/pub/irs-soi/countyinflow2223.csv",
+      "provider": "Internal Revenue Service, Statistics of Income",
+      "access_method": "Direct HTTP download",
+      "dataset": "county to county migration, total us in and out migration per county summed to cbsa and metropolitan division codes"
+    },
+    "integrity": {
+      "sha256": "4680966faca9d36a96fe7f9dc48ed40f264646262dc43a8786bf7b57f54c0c87",
+      "size_kb": 1278.0,
+      "row_count": 38256
+    },
+    "version": "through 2022-2023",
+    "downloaded_at": "2026-09-15T16:48:52Z",
+    "notes": {
+      "summary_row": "partner state 97 with county 0, Total Migration-US, per county",
+      "rule": "a county counts in a year only when both its inflow and outflow totals are present and not suppressed (-1), counties sum to their cbsa and, inside a division, to that division too",
+      "period": "the second filing year of each pair",
+      "metrics": [
+        "irs_net_returns",
+        "irs_net_exemptions",
+        "irs_inflow_returns",
+        "irs_outflow_returns"
+      ],
+      "delineation": "https://www2.census.gov/programs-surveys/metro-micro/geographies/reference-files/2023/delineation-files/list1_2023.xlsx",
+      "files": [
+        {
+          "filename": "countyinflow1314.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyinflow1314.csv",
+          "sha256": "1ec398625a217fa47fb7244aac9c576405a612f4d6a4c1d5ad4cc2dce542293e",
+          "size_kb": 4337.4,
+          "row_count": 86193
+        },
+        {
+          "filename": "countyoutflow1314.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyoutflow1314.csv",
+          "sha256": "2427141c0663481a880618d4421d7a700dad2ffa865f7c98c2f8e52e136a19ac",
+          "size_kb": 4344.9,
+          "row_count": 86347
+        },
+        {
+          "filename": "countyinflow1415.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyinflow1415.csv",
+          "sha256": "a9da15d0acfcfb9a1b7708e9cdd0acc81b41fd8f5e63daef89717c2f390a6dcf",
+          "size_kb": 3866.1,
+          "row_count": 75527
+        },
+        {
+          "filename": "countyoutflow1415.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyoutflow1415.csv",
+          "sha256": "5c9e1616b68a534a7cb841ac0019be670d4c800a50c935e9aeb976c30957a4bd",
+          "size_kb": 3880.6,
+          "row_count": 75785
+        },
+        {
+          "filename": "countyinflow1516.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyinflow1516.csv",
+          "sha256": "5194d9b62a3539267ce5b697800cbfaab138750b3002f33b4498dd4d4799e4b1",
+          "size_kb": 4342.8,
+          "row_count": 86330
+        },
+        {
+          "filename": "countyoutflow1516.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyoutflow1516.csv",
+          "sha256": "186a041e6a6e76991593ba0b7bbf6f0ab4620a4cf7f5c1681a6731b8b900ac16",
+          "size_kb": 4349.4,
+          "row_count": 86481
+        },
+        {
+          "filename": "countyinflow1617.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyinflow1617.csv",
+          "sha256": "fa6237a4aa8fce712a077aaff5670369feafbdccce1dba9752199c5f3e22df2c",
+          "size_kb": 4889.7,
+          "row_count": 98874
+        },
+        {
+          "filename": "countyoutflow1617.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyoutflow1617.csv",
+          "sha256": "224a13bd13cee1bea496253a316a885d125319741a4d03ed748abb28d06ee2aa",
+          "size_kb": 4889.2,
+          "row_count": 98948
+        },
+        {
+          "filename": "countyinflow1718.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyinflow1718.csv",
+          "sha256": "405b527993dcf112b998981827a9f7a7be289c77ee9f454d25289a8041e0ddfb",
+          "size_kb": 4409.9,
+          "row_count": 87932
+        },
+        {
+          "filename": "countyoutflow1718.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyoutflow1718.csv",
+          "sha256": "d7c263f8995b59ec46293a873e7d04bd9fae799f77120cae95db2f5c6896c344",
+          "size_kb": 4401.2,
+          "row_count": 87820
+        },
+        {
+          "filename": "countyinflow1819.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyinflow1819.csv",
+          "sha256": "e547e8b75d6792c37a55d5f02623f16108de5f91d97784d70c8af1190a83792f",
+          "size_kb": 4168.5,
+          "row_count": 83762
+        },
+        {
+          "filename": "countyoutflow1819.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyoutflow1819.csv",
+          "sha256": "ca26084b492c3c0152c82494ecb42fe24e044421351a8a36cd353d1102d05688",
+          "size_kb": 4174.9,
+          "row_count": 83878
+        },
+        {
+          "filename": "countyinflow1920.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyinflow1920.csv",
+          "sha256": "a6c85b3fbd187f861862c40b25508371e585e33ab4ab25768b9176c29defd53c",
+          "size_kb": 4344.2,
+          "row_count": 87552
+        },
+        {
+          "filename": "countyoutflow1920.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyoutflow1920.csv",
+          "sha256": "79724ba660a3c64ebe3e98c0de54124bf77cf600d7cc85f8f4200470f7386a3f",
+          "size_kb": 4325.6,
+          "row_count": 87325
+        },
+        {
+          "filename": "countyinflow2021.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyinflow2021.csv",
+          "sha256": "37bfbf656cbbb953bb6cdaeea480ced653849456d49313c141b096b2e6aed495",
+          "size_kb": 4337.9,
+          "row_count": 89850
+        },
+        {
+          "filename": "countyoutflow2021.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyoutflow2021.csv",
+          "sha256": "ff4fb70dc4f4dee63ef0b2587c8df76c7bf75aa9cd8c3c29cd9297862dc79914",
+          "size_kb": 4311.2,
+          "row_count": 89511
+        },
+        {
+          "filename": "countyinflow2122.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyinflow2122.csv",
+          "sha256": "9c0778ed91553866820301bf1b9352c135c21cb27c2a73db0caac60502383f92",
+          "size_kb": 4377.6,
+          "row_count": 90498
+        },
+        {
+          "filename": "countyoutflow2122.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyoutflow2122.csv",
+          "sha256": "51b988a3b170e37a45f1598bfbe18e136ef3236dcda7227b458e6714cf0535e4",
+          "size_kb": 4364.1,
+          "row_count": 90409
+        },
+        {
+          "filename": "countyinflow2223.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyinflow2223.csv",
+          "sha256": "813ba2ef550c6a598a5121ccf98edcc79f61f1af69eb495bf44cd830b1586745",
+          "size_kb": 4464.8,
+          "row_count": 90048
+        },
+        {
+          "filename": "countyoutflow2223.csv",
+          "endpoint": "https://www.irs.gov/pub/irs-soi/countyoutflow2223.csv",
+          "sha256": "364dba518f0db092515ccde03dda987815f6e54bcc8859640001e9185d4c106e",
+          "size_kb": 4477.0,
+          "row_count": 90358
+        }
+      ]
+    }
+  }
+]

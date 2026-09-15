@@ -76,6 +76,8 @@ FRED = pd.DataFrame({
 def write_fixtures(folder):
     folder = Path(folder)
     paths = {
+        # keep the build away from the real data/raw enrichment files
+        "enrichment_dir": folder,
         "merged": folder / "merged.csv",
         "centroids": folder / "centroids.csv",
         "zhvi": folder / "zhvi.csv",
@@ -218,7 +220,7 @@ class TestEdgeCases(BuildCase):
         names = [m["name"] for m in payload["metros"]]
         self.assertEqual(names, sorted(names))
         metro = payload["metros"][0]
-        self.assertEqual(list(metro), ["cbsa", "name", "level", "parent", "zillow_scope", "lat", "lon", "years", "latest", "growth", "ptir"])
+        self.assertEqual(list(metro), ["cbsa", "name", "level", "parent", "zillow_scope", "lat", "lon", "years", "latest", "growth", "ptir", "parent_metrics"])
         self.assertEqual(list(metro["years"]), ["2014", "2019", "2024"])
         self.assertEqual(list(metro["years"]["2014"]), ["hpi", "income", "pop", "age", "degree_share",
                                                         "own_rate", "home_value", "zhvi", "zori", "unemp"])
@@ -341,3 +343,108 @@ class TestDivisions(unittest.TestCase):
     def test_display_name_strips_only_the_suffix(self):
         self.assertEqual(bm.display_name("Boston, MA (MSAD)"), "Boston, MA")
         self.assertEqual(bm.display_name("Abilene, TX"), "Abilene, TX")
+
+
+class TestEnrichment(unittest.TestCase):
+    def frames(self):
+        merged = pd.DataFrame({
+            "cbsa_code": ["16984", "10180"],
+            "place_name": ["Chicago-Naperville-Schaumburg, IL (MSAD)", "Abilene, TX"],
+            "year": [2024, 2024], "avg_index_nsa": [260.0, 335.5],
+            "geo_level": ["division", "msa"], "parent_cbsa": ["16980", None],
+        })
+        centroids = pd.DataFrame({
+            "cbsa_code": ["16980", "16984", "10180"],
+            "name": ["Chicago-Naperville-Elgin, IL-IN Metro Area", "Chicago-Naperville-Schaumburg, IL Metro Division", "Abilene, TX Metro Area"],
+            "lat": [41.8, 41.85, 32.45], "lon": [-87.9, -87.95, -99.7],
+        }).set_index("cbsa_code")
+        return merged, centroids
+
+    def write(self, folder, name, rows, manifest=None):
+        src = Path(folder) / name
+        src.mkdir()
+        (src / "metrics.csv").write_text("cbsa_code,metric,period,value\n" + "\n".join(rows) + "\n")
+        if manifest is not None:
+            (src / "download_manifest.json").write_text(json.dumps(manifest))
+        return src
+
+    def test_annual_and_monthly_land_in_the_right_places(self):
+        merged, centroids = self.frames()
+        with tempfile.TemporaryDirectory() as tmp:
+            self.write(tmp, "permits", ["10180,permits,2024,850", "10180,permits,2019,600",
+                                        "10180,listings,2026-07,120", "10180,listings,2024,90"])
+            metros, _, _ = bm.build_metros(merged, centroids, enrichments=bm.discover_enrichments(tmp))
+        abi = next(m for m in metros if m["cbsa"] == "10180")
+        self.assertEqual(abi["years"]["2024"]["permits"], 850.0)
+        self.assertEqual(abi["years"]["2019"]["permits"], 600.0)
+        self.assertIsNone(abi["years"]["2014"]["permits"])
+        # newest period wins even when a monthly and an annual row coexist
+        self.assertEqual((abi["latest"]["listings"], abi["latest"]["listings_date"]), (120.0, "2026-07"))
+        self.assertEqual((abi["latest"]["permits"], abi["latest"]["permits_date"]), (850.0, "2024"))
+
+    def test_every_metro_gets_every_metric_key(self):
+        merged, centroids = self.frames()
+        with tempfile.TemporaryDirectory() as tmp:
+            self.write(tmp, "permits", ["10180,permits,2024,850"])
+            metros, _, _ = bm.build_metros(merged, centroids, enrichments=bm.discover_enrichments(tmp))
+        chi = next(m for m in metros if m["cbsa"] == "16984")
+        self.assertIn("permits", chi["years"]["2024"])
+        self.assertIsNone(chi["years"]["2024"]["permits"])
+        self.assertIsNone(chi["latest"]["permits_date"])
+        self.assertEqual(chi["parent_metrics"], [])
+
+    # a division without rows of its own takes the parent metro's value
+    def test_division_inherits_from_parent_and_says_so(self):
+        merged, centroids = self.frames()
+        with tempfile.TemporaryDirectory() as tmp:
+            self.write(tmp, "permits", ["16980,permits,2024,30000", "16984,own_metric,2024,1"])
+            metros, _, _ = bm.build_metros(merged, centroids, enrichments=bm.discover_enrichments(tmp))
+        chi = next(m for m in metros if m["cbsa"] == "16984")
+        self.assertEqual(chi["years"]["2024"]["permits"], 30000.0)
+        self.assertEqual(chi["years"]["2024"]["own_metric"], 1.0)
+        self.assertEqual(chi["parent_metrics"], ["permits"])
+
+    def test_metro_never_inherits(self):
+        merged, centroids = self.frames()
+        with tempfile.TemporaryDirectory() as tmp:
+            self.write(tmp, "permits", ["16980,permits,2024,30000"])
+            metros, _, _ = bm.build_metros(merged, centroids, enrichments=bm.discover_enrichments(tmp))
+        abi = next(m for m in metros if m["cbsa"] == "10180")
+        self.assertIsNone(abi["years"]["2024"]["permits"])
+        self.assertEqual(abi["parent_metrics"], [])
+
+    def test_reserved_metric_name_raises(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.write(tmp, "bad", ["10180,hpi,2024,1"])
+            with self.assertRaises(ValueError):
+                bm.discover_enrichments(tmp)
+
+    def test_missing_column_raises(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            src = Path(tmp) / "bad"
+            src.mkdir()
+            (src / "metrics.csv").write_text("cbsa_code,metric,value\n10180,x,1\n")
+            with self.assertRaises(ValueError):
+                bm.discover_enrichments(tmp)
+
+    def test_non_numeric_rows_are_dropped_not_fatal(self):
+        merged, centroids = self.frames()
+        with tempfile.TemporaryDirectory() as tmp:
+            self.write(tmp, "permits", ["10180,permits,2024,n/a", "10180,permits,2019,600"])
+            metros, _, _ = bm.build_metros(merged, centroids, enrichments=bm.discover_enrichments(tmp))
+        abi = next(m for m in metros if m["cbsa"] == "10180")
+        self.assertIsNone(abi["years"]["2024"]["permits"])
+        self.assertEqual(abi["years"]["2019"]["permits"], 600.0)
+
+    def test_no_enrichment_dir_contents_is_fine(self):
+        merged, centroids = self.frames()
+        with tempfile.TemporaryDirectory() as tmp:
+            metros, _, _ = bm.build_metros(merged, centroids, enrichments=bm.discover_enrichments(tmp))
+        self.assertEqual(metros[0]["parent_metrics"], [])
+
+    def test_sources_block_reads_the_manifest_version(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.write(tmp, "permits", ["10180,permits,2024,850"], manifest=[{"version": "2024 annual"}])
+            self.write(tmp, "nomanifest", ["10180,other,2024,1"])
+            self.assertEqual(bm.enrichment_version(Path(tmp) / "permits"), "2024 annual")
+            self.assertEqual(bm.enrichment_version(Path(tmp) / "nomanifest"), "present")

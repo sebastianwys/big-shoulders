@@ -8,6 +8,7 @@ from bot.collectors.gazetteer import YEAR as GAZETTEER_YEAR
 from bot.common import INTEGRATED, RAW_DIR, STUDY_YEARS, WEB_DATA_DIR, utc_now
 
 DEFAULT_PATHS = {
+    "enrichment_dir": RAW_DIR,
     "merged": INTEGRATED,
     "centroids": RAW_DIR / "gazetteer" / "cbsa_centroids.csv",
     "zhvi": RAW_DIR / "zillow" / "zhvi_metro.csv",
@@ -196,6 +197,89 @@ def fred_latest(frame):
     return float(last["value"]), str(last["date"])
 
 
+# --- generic enrichment ---
+
+ENRICHMENT_COLUMNS = ["cbsa_code", "metric", "period", "value"]
+
+# core field names a collector may not reuse
+RESERVED = {"hpi", "income", "pop", "age", "degree_share", "own_rate", "home_value", "zhvi", "zori", "unemp"}
+
+
+# any collector can drop metrics.csv beside its manifest with the columns
+# cbsa_code, metric, period, value. period is yyyy for an annual value or
+# yyyy-mm for a monthly one. annual values land in years[y], the newest period
+# per metric lands in latest with its date
+def load_enrichment(path):
+    path = Path(path)
+    df = pd.read_csv(path, dtype={"cbsa_code": str, "metric": str, "period": str})
+    absent = [c for c in ENRICHMENT_COLUMNS if c not in df.columns]
+    if absent:
+        raise ValueError(f"{path.parent.name}/metrics.csv is missing columns {absent}")
+    clash = sorted(set(df["metric"].dropna()) & RESERVED)
+    if clash:
+        raise ValueError(f"{path.parent.name}/metrics.csv reuses core field names {clash}")
+    df["value"] = pd.to_numeric(df["value"], errors="coerce")
+    df = df.dropna(subset=["cbsa_code", "metric", "period", "value"])
+    return {
+        "name": path.parent.name,
+        "metrics": sorted(df["metric"].unique()),
+        "groups": {code: sub for code, sub in df.groupby("cbsa_code")},
+    }
+
+
+def discover_enrichments(raw_dir):
+    return [load_enrichment(p) for p in sorted(Path(raw_dir).glob("*/metrics.csv"))]
+
+
+# the version string from a source's manifest, for the sources block
+def enrichment_version(folder):
+    manifest = Path(folder) / "download_manifest.json"
+    if not manifest.exists():
+        return "present"
+    entries = json.loads(manifest.read_text())
+    return entries[0].get("version", "present") if entries else "present"
+
+
+# annual values keyed (metric, year), plus the newest period per metric
+def enrich_values(rows):
+    annual, latest = {}, {}
+    if rows is None:
+        return annual, latest
+    for metric, period, value in zip(rows["metric"], rows["period"], rows["value"]):
+        period = str(period)
+        if len(period) == 4 and period.isdigit():
+            annual[(metric, int(period))] = float(value)
+        if metric not in latest or period > latest[metric][0]:
+            latest[metric] = (period, float(value))
+    return annual, latest
+
+
+def _has(metric, annual, latest):
+    return metric in latest or any(m == metric for m, _ in annual)
+
+
+# fold every enrichment into one metro. a division with no rows of its own for
+# a metric takes the parent's and lists the metric in parent_metrics. every
+# metro gets every metric key, null when nothing is known
+def apply_enrichments(metro, enrichments, parent_code=None):
+    inherited = []
+    for source in enrichments:
+        own = enrich_values(source["groups"].get(metro["cbsa"]))
+        parent = enrich_values(source["groups"].get(parent_code)) if parent_code else ({}, {})
+        for metric in source["metrics"]:
+            annual, latest = own
+            if not _has(metric, *own) and _has(metric, *parent):
+                annual, latest = parent
+                inherited.append(metric)
+            for year in STUDY_YEARS:
+                metro["years"][str(year)][metric] = rnd(annual.get((metric, year)), 4)
+            period, value = latest.get(metric, (None, None))
+            metro["latest"][metric] = rnd(value, 4)
+            metro["latest"][f"{metric}_date"] = period
+    metro["parent_metrics"] = sorted(inherited)
+    return metro
+
+
 # --- assembly ---
 
 def year_record(row, zhvi_row, zori_row, bls_frame, cbsa, year):
@@ -220,7 +304,7 @@ def year_record(row, zhvi_row, zori_row, bls_frame, cbsa, year):
     }
 
 
-def build_metros(merged, centroids, zhvi=None, zori=None, bls_frame=None):
+def build_metros(merged, centroids, zhvi=None, zori=None, bls_frame=None, enrichments=()):
     metros, dropped, unmatched = [], 0, 0
     y0, y1, y2 = STUDY_YEARS
     for cbsa, group in merged.groupby("cbsa_code", sort=False):
@@ -253,7 +337,7 @@ def build_metros(merged, centroids, zhvi=None, zori=None, bls_frame=None):
         zori_latest, zori_date = zillow_latest(zori_row)
         unemp_latest, unemp_date = bls_latest(bls_frame, cbsa)
 
-        metros.append({
+        record = {
             "cbsa": cbsa,
             "name": name,
             "level": level,
@@ -275,7 +359,8 @@ def build_metros(merged, centroids, zhvi=None, zori=None, bls_frame=None):
                 f"home_value_{y0 % 100}_{y2 % 100}": rnd(growth(value(y2, "median_home_value"), value(y0, "median_home_value")), 4),
             },
             "ptir": {str(y): rnd(ratio(value(y, "median_home_value"), value(y, "median_income")), 4) for y in STUDY_YEARS},
-        })
+        }
+        metros.append(apply_enrichments(record, enrichments, parent["cbsa"] if parent else None))
 
     metros.sort(key=lambda m: m["name"])
     return metros, dropped, unmatched
@@ -324,8 +409,9 @@ def build(out_path=None, paths=None):
     zori = optional(p["zori"], load_zillow, "zillow zori")
     bls_frame = optional(p["bls"], load_bls, "bls")
     fred_frame = optional(p["fred"], load_fred, "fred")
+    enrichments = discover_enrichments(p["enrichment_dir"])
 
-    metros, dropped, unmatched = build_metros(merged, centroids, zhvi, zori, bls_frame)
+    metros, dropped, unmatched = build_metros(merged, centroids, zhvi, zori, bls_frame, enrichments)
 
     payload = {
         "generated_at": utc_now(),
@@ -335,6 +421,7 @@ def build(out_path=None, paths=None):
             "zillow": zillow_version(zhvi),
             "bls": bls_version(bls_frame),
             "fred": fred_version(fred_frame),
+            **{e["name"]: enrichment_version(Path(p["enrichment_dir"]) / e["name"]) for e in enrichments},
         },
         "national": national_block(fred_frame),
         "metros": metros,
@@ -345,7 +432,8 @@ def build(out_path=None, paths=None):
     out_path.write_text(json.dumps(payload, ensure_ascii=True, allow_nan=False) + "\n")
 
     print(f"[build] {len(metros)} metros, {dropped} without a centroid dropped, "
-          f"{unmatched} without a zillow match -> {out_path.name} ({out_path.stat().st_size / 1024:.0f} KB)")
+          f"{unmatched} without a zillow match, {len(enrichments)} enrichment sources "
+          f"-> {out_path.name} ({out_path.stat().st_size / 1024:.0f} KB)")
     return out_path
 
 

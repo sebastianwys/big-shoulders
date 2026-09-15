@@ -1,0 +1,46 @@
+[
+  {
+    "filename": "metrics.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://econdata.s3-us-west-2.amazonaws.com/Reports/Core/RDC_Inventory_Core_Metrics_Metro_History.csv",
+      "provider": "Realtor.com Economic Research",
+      "access_method": "Direct HTTP download",
+      "dataset": "Inventory core metrics, metro history: monthly listing price, active listings, days on market and price reductions, summarized to annual means and the newest month"
+    },
+    "integrity": {
+      "sha256": "2bb86ffded6cd2b8fddf459630e792b3b8bfd8e041fd1f1acf4b10437b740839",
+      "size_kb": 1354.1,
+      "row_count": 37000
+    },
+    "version": "through 2026-08",
+    "downloaded_at": "2026-09-15T16:44:13Z",
+    "notes": {
+      "attribution": "Realtor.com Economic Research, realtor.com/research/data",
+      "source_file": "RDC_Inventory_Core_Metrics_Metro_History.csv",
+      "source_sha256": "768a2510292da5e45cc5dde56aace1a4aad807d2eead1df639bfca56ff8940e3",
+      "source_size_kb": 32423.6,
+      "source_rows": 112850,
+      "source_newest_month": "2026-08",
+      "full_years": [
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "quality_flagged_rows": 14128,
+      "metrics": {
+        "median_listing_price": "median_listing_price as published",
+        "active_listings": "active_listing_count as published",
+        "days_on_market": "median_days_on_market as published",
+        "price_reduced_share": "price_reduced_count over total_listing_count, null when the denominator is 0 or missing"
+      },
+      "aggregation": "annual rows are means of the months in each full calendar year, monthly rows are the newest month with a value per metro and metric, flagged months are kept"
+    }
+  }
+]

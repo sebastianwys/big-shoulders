@@ -1,0 +1,205 @@
+[
+  {
+    "filename": "metrics.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://api.census.gov/data/2024/acs/acs5",
+      "provider": "U.S. Census Bureau",
+      "access_method": "REST API",
+      "dataset": "metro metrics derived from ACS 5-year estimates, one row per cbsa, metric and vintage"
+    },
+    "integrity": {
+      "sha256": "388cb6eae971831d88945f03146b324c5da052095bdb8ca98bf1b84f182b09f4",
+      "size_kb": 565.8,
+      "row_count": 17406
+    },
+    "version": "ACS 5-year 2014, 2019, 2024",
+    "downloaded_at": "2026-09-15T16:50:24Z",
+    "notes": {
+      "metrics": {
+        "gross_rent": {
+          "num": [
+            "B25064_001E"
+          ]
+        },
+        "rent_burden": {
+          "num": [
+            "B25070_007E",
+            "B25070_008E",
+            "B25070_009E",
+            "B25070_010E"
+          ],
+          "den": [
+            "B25070_001E"
+          ],
+          "less": [
+            "B25070_011E"
+          ]
+        },
+        "vacancy_rate": {
+          "num": [
+            "B25002_003E"
+          ],
+          "den": [
+            "B25002_001E"
+          ]
+        },
+        "commute_minutes": {
+          "num": [
+            "B08013_001E"
+          ],
+          "den": [
+            "B08012_001E"
+          ]
+        },
+        "poverty_rate": {
+          "num": [
+            "B17001_002E"
+          ],
+          "den": [
+            "B17001_001E"
+          ]
+        },
+        "labor_force_rate": {
+          "num": [
+            "B23025_002E"
+          ],
+          "den": [
+            "B23025_001E"
+          ]
+        }
+      },
+      "vintages": [
+        2014,
+        2019,
+        2024
+      ],
+      "division_crosswalk": {
+        "16974": "16984",
+        "23844": "29414",
+        "43524": "23224",
+        "35154": "29484"
+      },
+      "absent_variables": {},
+      "raw_files": [
+        "acs_extra_2014.csv",
+        "acs_extra_2019.csv",
+        "acs_extra_2024.csv"
+      ]
+    }
+  },
+  {
+    "filename": "acs_extra_2014.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://api.census.gov/data/2014/acs/acs5",
+      "provider": "U.S. Census Bureau",
+      "access_method": "REST API",
+      "dataset": "ACS 5-year estimates, 2014 vintage"
+    },
+    "integrity": {
+      "sha256": "420f3fb2eaade33c0996a2b6051f93ac47df9f64501ab16b808626258748647f",
+      "size_kb": 129.4,
+      "row_count": 960
+    },
+    "version": "ACS 5-year 2014",
+    "downloaded_at": "2026-09-15T16:49:32Z",
+    "notes": {
+      "geography": "metropolitan statistical area/micropolitan statistical area:* plus metropolitan division:* within 13 split msas",
+      "variables": [
+        "B25064_001E",
+        "B25070_007E",
+        "B25070_008E",
+        "B25070_009E",
+        "B25070_010E",
+        "B25070_001E",
+        "B25070_011E",
+        "B25002_003E",
+        "B25002_001E",
+        "B08013_001E",
+        "B08012_001E",
+        "B17001_002E",
+        "B17001_001E",
+        "B23025_002E",
+        "B23025_001E"
+      ],
+      "absent_variables": []
+    }
+  },
+  {
+    "filename": "acs_extra_2019.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://api.census.gov/data/2019/acs/acs5",
+      "provider": "U.S. Census Bureau",
+      "access_method": "REST API",
+      "dataset": "ACS 5-year estimates, 2019 vintage"
+    },
+    "integrity": {
+      "sha256": "1508278e70a867426ab41d251033e32d186b526b643ebc5ca9b9c3a334e49678",
+      "size_kb": 130.5,
+      "row_count": 969
+    },
+    "version": "ACS 5-year 2019",
+    "downloaded_at": "2026-09-15T16:49:53Z",
+    "notes": {
+      "geography": "metropolitan statistical area/micropolitan statistical area:* plus metropolitan division:* within 13 split msas",
+      "variables": [
+        "B25064_001E",
+        "B25070_007E",
+        "B25070_008E",
+        "B25070_009E",
+        "B25070_010E",
+        "B25070_001E",
+        "B25070_011E",
+        "B25002_003E",
+        "B25002_001E",
+        "B08013_001E",
+        "B08012_001E",
+        "B17001_002E",
+        "B17001_001E",
+        "B23025_002E",
+        "B23025_001E"
+      ],
+      "absent_variables": []
+    }
+  },
+  {
+    "filename": "acs_extra_2024.csv",
+    "file_format": "CSV",
+    "source": {
+      "endpoint": "https://api.census.gov/data/2024/acs/acs5",
+      "provider": "U.S. Census Bureau",
+      "access_method": "REST API",
+      "dataset": "ACS 5-year estimates, 2024 vintage"
+    },
+    "integrity": {
+      "sha256": "7e06e81a65d65d6fea171b500287c944142e435619494217f4530319c58aa4c5",
+      "size_kb": 131.9,
+      "row_count": 972
+    },
+    "version": "ACS 5-year 2024",
+    "downloaded_at": "2026-09-15T16:50:24Z",
+    "notes": {
+      "geography": "metropolitan statistical area/micropolitan statistical area:* plus metropolitan division:* within 13 split msas",
+      "variables": [
+        "B25064_001E",
+        "B25070_007E",
+        "B25070_008E",
+        "B25070_009E",
+        "B25070_010E",
+        "B25070_001E",
+        "B25070_011E",
+        "B25002_003E",
+        "B25002_001E",
+        "B08013_001E",
+        "B08012_001E",
+        "B17001_002E",
+        "B17001_001E",
+        "B23025_002E",
+        "B23025_001E"
+      ],
+      "absent_variables": []
+    }
+  }
+]
