@@ -1,6 +1,8 @@
-# Project Loop
+# Project Loop: Consumer & Macro Conditions Data Platform
 
-Housing affordability trend analysis. I integrate the FHFA House Price Index with U.S. Census ACS demographic and economic indicators across U.S. metropolitan areas.
+Consumer and macroeconomic conditions across 410 U.S. metros. I join FHFA, Census, BLS, FRED, Zillow and IRS sources into one panel, forecast house price growth with a PyTorch GRU, and publish it to a live map.
+
+Live map: https://loop.macroviz.workers.dev
 
 This started as my IS477 final project at the University of Illinois, Project Loop. The pipeline in the repository root is that project, tagged `final-project`. The modeling work that builds on it lives in `ml/` and is in progress.
 
