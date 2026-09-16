@@ -4,7 +4,7 @@ Consumer and macroeconomic conditions across 410 U.S. metros. I join FHFA, Censu
 
 Live map: https://loop.macroviz.workers.dev
 
-This started as my IS477 final project at the University of Illinois, Project Loop. The pipeline in the repository root is that project, tagged `final-project`. The modeling work that builds on it lives in `ml/` and is in progress.
+This started as my IS477 final project at the University of Illinois, Project Loop. The pipeline in the repository root is that project, tagged `final-project`. The modeling work that builds on it lives in `ml/`: a PyTorch GRU that forecasts house price growth 1 to 8 quarters ahead, scored once on a held-out test block against four baselines, with conformalized quantile regression bands. The walkthrough is in `ml/README.md`.
 
 ## The Contributors
 
